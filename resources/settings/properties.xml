@@ -1,0 +1,7 @@
+<properties>
+    <property id="appVersion" type="string">1.1</property>
+    <property id="typeMetric1" type="number">3</property>
+    <property id="typeMetric2" type="number">1</property>
+    <property id="typeMetric3" type="number">2</property>
+    <property id="typeMetric4" type="number">6</property>
+</properties>

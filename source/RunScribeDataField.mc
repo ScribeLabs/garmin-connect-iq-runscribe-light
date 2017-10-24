@@ -29,29 +29,18 @@ using Toybox.Graphics as Gfx;
 
 class RunScribeDataField extends Ui.DataField {
     
-    hidden var mMetricCount;
-    
-    // Metric 1
     hidden var mMetric1Type = 3; // 1 - Impact GS, 2 - Braking GS, 3 - FS Type, 4 - Pronation, 5 - Flight Ratio, 6 - Contact Time
-    hidden var mMetric1Name;
-    
-    // Metric 2
     hidden var mMetric2Type = 1; // 1 - Impact GS, 2 - Braking GS, 3 - FS Type, 4 - Pronation, 5 - Flight Ratio, 6 - Contact Time
-    hidden var mMetric2Name;
-    
-    // Metric 3
     hidden var mMetric3Type = 2; // 0 - None, 1 - Impact GS, 2 - Braking GS, 3 - FS Type, 4 - Pronation, 5 - Flight Ratio, 6 - Contact Time
-    hidden var mMetric3Name;
-    
-    // Metric 4
     hidden var mMetric4Type = 6; // 0 - None, 1 - Impact GS, 2 - Braking GS, 3 - FS Type, 4 - Pronation, 5 - Flight Ratio, 6 - Contact Time
-    hidden var mMetric4Name;
-    
+
+    hidden var mMetricCount;
+
     // Common
     hidden var mMetricTitleY;
     hidden var mMetricValueY;
     hidden var mMetricValueOffsetX;
-    
+        
     // Fit Contributor
     hidden var mFitContributor;
     
@@ -67,6 +56,8 @@ class RunScribeDataField extends Ui.DataField {
     hidden var xCenter;
     hidden var yCenter;
     
+    hidden var mUpdateLayout = 0;
+    
     // Constructor
     function initialize(sensorL, sensorR, screenShape) {
         mScreenShape = screenShape;
@@ -79,13 +70,24 @@ class RunScribeDataField extends Ui.DataField {
     
     function onSettingsChanged() {
         var app = App.getApp();
-        mMetric1Type = app.getProperty("typeMetric1");
-        mMetric2Type = app.getProperty("typeMetric2");
-        mMetric3Type = app.getProperty("typeMetric3");
-        mMetric4Type = app.getProperty("typeMetric4");
         
-        // Save memory, allow only 2-4 metrics, not 1
-        if (mMetric3Type == 0) {
+        var name = "typeMetric";
+        mMetric1Type = app.getProperty(name + "1");
+        mMetric2Type = app.getProperty(name + "2");
+        mMetric3Type = app.getProperty(name + "3");
+        mMetric4Type = app.getProperty(name + "4");
+
+        // Remove empty metrics from between
+        if (mMetric2Type == 0) {
+            if (mMetric3Type == 0) {
+                mMetric2Type = mMetric4Type;
+                mMetric4Type = 0;
+            } else {
+                mMetric2Type = mMetric3Type;
+                mMetric3Type = mMetric4Type;
+                mMetric4Type = 0;
+            }
+        } else if (mMetric3Type == 0) {
             mMetric3Type = mMetric4Type;
             mMetric4Type = 0;
         }
@@ -94,14 +96,13 @@ class RunScribeDataField extends Ui.DataField {
             mMetricCount = 4; 
         } else if (mMetric3Type != 0) {
             mMetricCount = 3;
-        } else {
+        } else if (mMetric2Type != 0) {
             mMetricCount = 2;
+        } else {
+            mMetricCount = 1;
         }
         
-        mMetric1Name = getMetricName(mMetric1Type);
-        mMetric2Name = getMetricName(mMetric2Type);
-        mMetric3Name = getMetricName(mMetric3Type);
-        mMetric4Name = getMetricName(mMetric4Type);
+        mUpdateLayout = 1;
     }
     
     function compute(info) {
@@ -118,16 +119,29 @@ class RunScribeDataField extends Ui.DataField {
         
         xCenter = width / 2;
         yCenter = height / 2;
-        
+                
         mMetricValueOffsetX = dc.getTextWidthInPixels(" ", Gfx.FONT_XTINY) + 2;
-        
+
         // Compute data width/height for horizintal layouts
-        var metricNameFontHeight = dc.getFontHeight(Gfx.FONT_XTINY);
-        mDataFont = selectFont(dc, width * 0.5, height * 0.4 - metricNameFontHeight, "00.0 - 00.0");
-        mDataFontHeight = dc.getFontHeight(mDataFont);
+        var metricNameFontHeight = dc.getFontHeight(Gfx.FONT_XTINY) + 2;
+        if (mMetricCount == 2) {
+            width *= 1.6;
+        } else if (mMetricCount == 1) {
+            width *= 2.0;
+        }
+
+        mDataFont = selectFont(dc, width * 0.45, height - metricNameFontHeight, "00.0--00.0");
+            
+        mDataFontHeight = dc.getFontHeight(mDataFont);    
+            
+        mMetricTitleY = -(mDataFontHeight + metricNameFontHeight) * 0.5;
+        if (mScreenShape == System.SCREEN_SHAPE_ROUND) {
+            mMetricTitleY *= 1.1;
+        } 
         
-        mMetricTitleY = -(height * 0.12); 
         mMetricValueY = mMetricTitleY + metricNameFontHeight;
+        
+        mUpdateLayout = 0;
     }
     
     hidden function selectFont(dc, width, height, testString) {
@@ -136,8 +150,8 @@ class RunScribeDataField extends Ui.DataField {
         
         var fonts = [Gfx.FONT_XTINY,Gfx.FONT_TINY,Gfx.FONT_SMALL,Gfx.FONT_MEDIUM,Gfx.FONT_LARGE,
                     Gfx.FONT_NUMBER_MILD,Gfx.FONT_NUMBER_MEDIUM,Gfx.FONT_NUMBER_HOT,Gfx.FONT_NUMBER_THAI_HOT];
-        
-        // Search through fonts from biggest to smallest
+                     
+        //Search through fonts from biggest to smallest
         for (fontIdx = (fonts.size() - 1); fontIdx > 0; --fontIdx) {
             dimensions = dc.getTextDimensions(testString, fonts[fontIdx]);
             if ((dimensions[0] <= width) && (dimensions[1] <= height)) {
@@ -168,7 +182,7 @@ class RunScribeDataField extends Ui.DataField {
         
         return null;
     }
-    
+        
     hidden function getMetric(metricType, sensor) {
         var floatFormat = "%.1f";
         if (sensor != null && sensor.data != null) {
@@ -189,6 +203,7 @@ class RunScribeDataField extends Ui.DataField {
         return "0";
     }
     
+    
     // Handle the update event
     function onUpdate(dc) {
         var bgColor = getBackgroundColor();
@@ -203,25 +218,41 @@ class RunScribeDataField extends Ui.DataField {
         
         dc.setColor(fgColor, Gfx.COLOR_TRANSPARENT);
         
+        if (mUpdateLayout != 0) {
+            onLayout(dc);
+        }
+        
         // Update status
         if (mSensorLeft != null && mSensorRight != null && (mSensorRight.searching == 0 || mSensorLeft.searching == 0)) {
-            var met1x, met1y, met2x, met2y, met3x = 0, met3y = 0, met4x = 0, met4y = 0;
+            
+            var met1x, met1y, met2x = 0, met2y = 0, met3x = 0, met3y = 0, met4x = 0, met4y = 0;
             
             var yOffset = yCenter * 0.55;
-            var xOffset = xCenter * 0.5;
-            
-            if (mMetricCount == 2) {
+            var xOffset = xCenter * 0.45;
+        
+            if (mScreenShape == System.SCREEN_SHAPE_SEMI_ROUND) {
+                yOffset *= 1.15;
+            }
+        
+            if (mMetricCount == 1) {
                 met1x = xCenter;
-                met1y = yCenter - yOffset * 0.7;
+                met1y = yCenter;
+            }
+            else if (mMetricCount == 2) {
+                met1x = xCenter;
                 met2x = met1x;
-                met2y = yCenter + yOffset * 0.7; 
+                if (mScreenShape == System.SCREEN_SHAPE_RECTANGLE) {
+                    yOffset *= 1.35;
+                }
+                met1y = yCenter - yOffset * 0.6;
+                met2y = yCenter + yOffset * 0.6;
             } else if (mScreenShape == System.SCREEN_SHAPE_RECTANGLE) {
-                yOffset *= 0.9;
+                yOffset *= 0.8;
                 met1x = xCenter - xOffset;
                 met1y = yCenter - yOffset;
                 met2x = xCenter + xOffset;
                 met2y = met1y;
-                
+            
                 if (mMetricCount == 3) {
                     met3x = xCenter;
                     met3y = yCenter + yOffset;  
@@ -231,11 +262,12 @@ class RunScribeDataField extends Ui.DataField {
                     met4x = met2x;
                     met4y = met3y;  
                 }
-            } else {
+            }
+            else {
                 met1x = xCenter;
                 met1y = yCenter - yOffset;
                 met2y = yCenter;
-                
+                 
                 if (mMetricCount == 3) {
                     met2x = met1x;
                     met3x = met1x;
@@ -249,15 +281,16 @@ class RunScribeDataField extends Ui.DataField {
                 }
             }
             
-            drawMetricOffset(dc, met1x, met1y, mMetric1Name, mMetric1Type);
-            drawMetricOffset(dc, met2x, met2y, mMetric2Name, mMetric2Type);
-            
+            drawMetricOffset(dc, met1x, met1y, mMetric1Type);         
+            if (mMetricCount >= 2) {
+                drawMetricOffset(dc, met2x, met2y, mMetric2Type);
+            }
             if (mMetricCount >= 3) {
-                drawMetricOffset(dc, met3x, met3y, mMetric3Name, mMetric3Type);
-            }
+                drawMetricOffset(dc, met3x, met3y, mMetric3Type);
+            } 
             if (mMetricCount == 4) {
-                drawMetricOffset(dc, met4x, met4y, mMetric4Name, mMetric4Type);
-            }
+                drawMetricOffset(dc, met4x, met4y, mMetric4Type);
+            } 
         } else {
             var message;
             if (mSensorLeft == null || mSensorRight == null) {
@@ -267,10 +300,11 @@ class RunScribeDataField extends Ui.DataField {
             }
             
             dc.drawText(xCenter, yCenter - dc.getFontHeight(Gfx.FONT_MEDIUM) / 2, Gfx.FONT_MEDIUM, message, Gfx.TEXT_JUSTIFY_CENTER);
-        }
+        }        
     }
+
+    hidden function drawMetricOffset(dc, x, y, metricType) {
     
-    hidden function drawMetricOffset(dc, x, y, metricName, metricType) {
         var metricLeft = getMetric(metricType, mSensorLeft);
         var metricRight = getMetric(metricType, mSensorRight);
         
@@ -278,8 +312,8 @@ class RunScribeDataField extends Ui.DataField {
             metricLeft = ((mSensorLeft.data.power + mSensorRight.data.power) / 2).format("%d");
         }
          
-        dc.drawText(x, y + mMetricTitleY, Gfx.FONT_XTINY, metricName, Gfx.TEXT_JUSTIFY_CENTER);
-        
+        dc.drawText(x, y + mMetricTitleY, Gfx.FONT_XTINY, getMetricName(metricType), Gfx.TEXT_JUSTIFY_CENTER);
+
         if (metricType == 7) {
             // Power metric presents a single value
             dc.drawText(x, y + mMetricValueY, mDataFont, metricLeft, Gfx.TEXT_JUSTIFY_CENTER);
@@ -289,6 +323,6 @@ class RunScribeDataField extends Ui.DataField {
             
             // Draw line
             dc.drawLine(x, y + mMetricValueY, x, y + mMetricValueY + mDataFontHeight);
-        }
+        }    
     }
 }

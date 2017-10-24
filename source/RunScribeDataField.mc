@@ -96,15 +96,13 @@ class RunScribeDataField extends Ui.DataField {
             mMetricCount = 4; 
         } else if (mMetric3Type != 0) {
             mMetricCount = 3;
-            mMetric4Type = mMetric3Type;
-            mMetric4Type = 0;
         } else if (mMetric2Type != 0) {
             mMetricCount = 2;
         } else {
             mMetricCount = 1;
         }
         
-        mUpdateLayout = true;
+        mUpdateLayout = 1;
     }
     
     function compute(info) {
@@ -167,19 +165,19 @@ class RunScribeDataField extends Ui.DataField {
     
     hidden function getMetricName(metricType) {
         if (metricType == 1) {
-            return "Impact Gs"; // Ui.loadResource(Rez.Strings.impact_gs_app_label);
+            return "Impact Gs";
         } else if (metricType == 2) {
-            return "Braking Gs"; // Ui.loadResource(Rez.Strings.braking_gs_app_label);
+            return "Braking Gs";
         } else if (metricType == 3) {
-            return "Footstrike"; // Ui.loadResource(Rez.Strings.fs_type_app_label);
+            return "Footstrike";
         } else if (metricType == 4) {
-            return "Pronation"; // Ui.loadResource(Rez.Strings.pronation_app_label);
+            return "Pronation";
         } else if (metricType == 5) {
-            return "Flight (%)"; // Ui.loadResource(Rez.Strings.flight_ratio_app_label);
+            return "Flight (%)";
         } else if (metricType == 6) {
-            return "GCT (ms)"; // Ui.loadResource(Rez.Strings.contact_time_app_label);
+            return "GCT (ms)";
         } else if (metricType == 7) {
-            return "Power (W)"; // Ui.loadResource(Rez.Strings.power_app_label);
+            return "Power (W)";
         }
         
         return null;
@@ -225,7 +223,7 @@ class RunScribeDataField extends Ui.DataField {
         }
         
         // Update status
-        if (mSensorLeft != null && mSensorRight != null && mSensorRight.data != null && mSensorLeft.data != null) {
+        if (mSensorLeft != null && mSensorRight != null && (mSensorRight.searching == 0 || mSensorLeft.searching == 0)) {
             
             var met1x, met1y, met2x = 0, met2y = 0, met3x = 0, met3y = 0, met4x = 0, met4y = 0;
             
@@ -294,19 +292,13 @@ class RunScribeDataField extends Ui.DataField {
                 drawMetricOffset(dc, met4x, met4y, mMetric4Type);
             } 
         } else {
-            var message = "No Channel!";
-            if (mSensorRight != null && mSensorLeft != null) {
-                var left = "...";
-                var right = left;
-                if (mSensorLeft.data != null) {
-                    left = "L";
-                }
-                if (mSensorRight.data != null) {
-                    right = "R";
-                }
-                message = "Searching (" + left + "/" + right + ")";
+            var message;
+            if (mSensorLeft == null || mSensorRight == null) {
+                message = "No Channel!";
+            } else {
+                message = "Searching...";
             }
-        
+            
             dc.drawText(xCenter, yCenter - dc.getFontHeight(Gfx.FONT_MEDIUM) / 2, Gfx.FONT_MEDIUM, message, Gfx.TEXT_JUSTIFY_CENTER);
         }        
     }

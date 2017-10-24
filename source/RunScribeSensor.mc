@@ -113,7 +113,7 @@ class RunScribeSensor extends Ant.GenericChannel {
                 searching = 0;
                 if (data == null) {
                     data = new RunScribeDataPage();
-                } 
+                }
             }
             
             if (0x00 == (payload[0].toNumber() & 0xFF) ) {

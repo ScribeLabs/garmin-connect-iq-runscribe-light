@@ -207,16 +207,8 @@ class RunScribeDataField extends Ui.DataField {
         // Update status
         if (mSensorRight == null || mSensorLeft == null) {
             drawTextInCenter(dc, "No Channel!");
-        } else if (mSensorRight.data == null || mSensorLeft.data == null) {
-            var left = "...";
-            var right = "...";
-            if (mSensorLeft.data != null) {
-            	left = "L";
-            }
-            if (mSensorRight.data != null) {
-            	right = "R";
-            }
-            drawTextInCenter(dc, "Searching (" + left + "/" + right + ")");
+        } else if (true == mSensorRight.searching && true == mSensorLeft.searching) {
+            drawTextInCenter(dc, "Searching...");
         } else {
             if (mScreenShape == System.SCREEN_SHAPE_RECTANGLE) {
                 if (mMetricCount >= 3) {

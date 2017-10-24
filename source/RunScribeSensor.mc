@@ -96,7 +96,7 @@ class RunScribeSensor extends Ant.GenericChannel {
     function open() {
         // Open the channel
         GenericChannel.open();
-        searching = 1;     
+        searching = 1;
     }
     
     function closeSensor() {
@@ -115,7 +115,7 @@ class RunScribeSensor extends Ant.GenericChannel {
                     data = new RunScribeDataPage();
                 } 
             }
-        
+            
             if (0x00 == (payload[0].toNumber() & 0xFF) ) {
                 data.parse_page_0(payload);
             } else if (0x01 == (payload[0].toNumber() & 0xFF)) {
@@ -126,8 +126,6 @@ class RunScribeSensor extends Ant.GenericChannel {
                 if (Ant.MSG_CODE_EVENT_CHANNEL_CLOSED == (payload[1] & 0xFF)) {
                     // Channel closed, re-open
                     open();
-                } else if (Ant.MSG_CODE_EVENT_RX_FAIL_GO_TO_SEARCH  == (payload[1] & 0xFF)) {
-                    searching = 1;
                 }
             }
         }

@@ -37,7 +37,7 @@ class RunScribeFitContributor {
 
     // Constructor
     function initialize(dataField) {
-    	var g = { :mesgType=>Fit.MESG_TYPE_RECORD, :units=>"G" };
+        var g = { :mesgType=>Fit.MESG_TYPE_RECORD, :units=>"G" };
         mCurrentBGField = dataField.createField("currBrakingGs", 0, Fit.DATA_TYPE_FLOAT, g);
         mCurrentIGField = dataField.createField("currImpactGs", 1, Fit.DATA_TYPE_FLOAT, g);
         
@@ -58,7 +58,7 @@ class RunScribeFitContributor {
 
     function compute(sensorL, sensorR) {
         if (sensorL != null && sensorR != null && sensorL.data != null && sensorR.data != null) {
-        	// Average L/R for combined metric
+            // Average L/R for combined metric
             mCurrentBGField.setData((sensorL.data.braking_gs + sensorR.data.braking_gs) * 0.5);
             mCurrentIGField.setData((sensorL.data.impact_gs + sensorR.data.impact_gs) * 0.5);
             mCurrentFSField.setData((sensorL.data.footstrike_type + sensorR.data.footstrike_type) * 0.5);

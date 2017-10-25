@@ -42,9 +42,9 @@ class RunScribeDataFieldApp extends App.AppBase {
         var sensorRight;
         
         try {
-            sensorLeft = new RunScribeSensor(11, 51, 32768/16);
+            sensorLeft = new RunScribeSensor(11, 38, 2048);
             sensorLeft.open();
-            sensorRight = new RunScribeSensor(12, 63, 32768/16);
+            sensorRight = new RunScribeSensor(12, 42, 2048);
             sensorRight.open();
         } catch(e instanceof Ant.UnableToAcquireChannelException) {
             sensorLeft = null;

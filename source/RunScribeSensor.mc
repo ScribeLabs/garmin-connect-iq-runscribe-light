@@ -57,7 +57,7 @@ class RunScribeSensor extends Ant.GenericChannel {
         var pronation_excursion_fs_mp = 0.0;
         
         function parse_page_0(payload) {
-            footstrike_type = payload[1] & 0x0F;
+            footstrike_type = (payload[1] & 0x0F) + 1;
             contact_time = ((payload[7] & 0x30) << 4) + payload[5];
             flight_ratio = decode_bits( (((payload[7] & 0xC0) << 2) + payload[6]), -28.0, 8.0 );
         }

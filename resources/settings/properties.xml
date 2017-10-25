@@ -1,5 +1,5 @@
 <properties>
-    <property id="appVersion" type="string">1.7</property>
+    <property id="appVersion" type="string">1.8</property>
     <property id="typeMetric1" type="number">3</property>
     <property id="typeMetric2" type="number">1</property>
     <property id="typeMetric3" type="number">2</property>

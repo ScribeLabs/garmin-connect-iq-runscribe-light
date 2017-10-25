@@ -9,13 +9,21 @@
 	<string id="none">None</string>
 
 	<!-- Metrics labels for FIT file -->
-	<string id="impact_gs_label">Impact Gs</string>
-	<string id="braking_gs_label">Braking Gs</string>
-	<string id="fs_type_label">FootStrike Type</string>
-	<string id="pronation_label">Pronation Excursion</string>
-	<string id="flight_ratio_label">Flight Ratio</string>
-	<string id="contact_time_label">Contact time</string>
-	<string id="power_label">Power</string>
+	<string id="impact_gs_label_left">Impact Gs Left</string>
+	<string id="braking_gs_label_left">Braking Gs Left</string>
+	<string id="fs_type_label_left">FootStrike Type Left</string>
+	<string id="pronation_label_left">Pronation Excursion Left</string>
+	<string id="flight_ratio_label_left">Flight Ratio Left</string>
+	<string id="contact_time_label_left">Contact time Left</string>
+
+    <string id="impact_gs_label_right">Impact Gs Right</string>
+    <string id="braking_gs_label_right">Braking Gs Right</string>
+    <string id="fs_type_label_right">FootStrike Type Right</string>
+    <string id="pronation_label_right">Pronation Excursion Right</string>
+    <string id="flight_ratio_label_right">Flight Ratio Right</string>
+    <string id="contact_time_label_right">Contact time Right</string>
+
+    <string id="power_label">Power</string>
 
 	<!-- Metrics labels + units -->
 	<string id="impact_gs_app_label">Impact Gs (G)</string>

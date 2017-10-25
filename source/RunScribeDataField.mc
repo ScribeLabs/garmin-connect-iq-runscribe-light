@@ -25,7 +25,7 @@
 using Toybox.WatchUi as Ui;
 using Toybox.Application as App;
 using Toybox.Graphics as Gfx;
-
+using Toybox.FitContributor as Fit;
 
 class RunScribeDataField extends Ui.DataField {
     
@@ -58,6 +58,23 @@ class RunScribeDataField extends Ui.DataField {
     
     hidden var mUpdateLayout = 0;
     
+    // FIT Contributions variables
+    hidden var mCurrentBGFieldLeft;
+    hidden var mCurrentIGFieldLeft;
+    hidden var mCurrentFSFieldLeft;
+    hidden var mCurrentPronationFieldLeft;
+    hidden var mCurrentFlightFieldLeft;
+    hidden var mCurrentGCTFieldLeft;
+
+    hidden var mCurrentBGFieldRight;
+    hidden var mCurrentIGFieldRight;
+    hidden var mCurrentFSFieldRight;
+    hidden var mCurrentPronationFieldRight;
+    hidden var mCurrentFlightFieldRight;
+    hidden var mCurrentGCTFieldRight;    
+
+    hidden var mCurrentPowerField;
+    
     // Constructor
     function initialize(sensorL, sensorR, screenShape) {
         mScreenShape = screenShape;
@@ -66,6 +83,24 @@ class RunScribeDataField extends Ui.DataField {
         
         mSensorLeft = sensorL;
         mSensorRight = sensorR;
+        
+        var g = { :mesgType=>Fit.MESG_TYPE_RECORD, :units=>"G" };
+
+        mCurrentBGFieldLeft = createField("", 0, Fit.DATA_TYPE_FLOAT, g);
+        mCurrentIGFieldLeft = createField("", 2, Fit.DATA_TYPE_FLOAT, g);
+        mCurrentFSFieldLeft = createField("", 4, Fit.DATA_TYPE_SINT8, { :mesgType=>Fit.MESG_TYPE_RECORD });
+        mCurrentPronationFieldLeft = createField("", 6, Fit.DATA_TYPE_SINT16, { :mesgType=>Fit.MESG_TYPE_RECORD, :units=>"D" });
+        mCurrentFlightFieldLeft = createField("", 8, Fit.DATA_TYPE_SINT8, { :mesgType=>Fit.MESG_TYPE_RECORD, :units=>"%" });
+        mCurrentGCTFieldLeft = createField("", 10, Fit.DATA_TYPE_SINT16, { :mesgType=>Fit.MESG_TYPE_RECORD, :units=>"ms" });
+
+        mCurrentBGFieldRight = createField("", 1, Fit.DATA_TYPE_FLOAT, g);
+        mCurrentIGFieldRight = createField("", 3, Fit.DATA_TYPE_FLOAT, g);
+        mCurrentFSFieldRight = createField("", 5, Fit.DATA_TYPE_SINT8, { :mesgType=>Fit.MESG_TYPE_RECORD });
+        mCurrentPronationFieldRight = createField("", 7, Fit.DATA_TYPE_SINT16, { :mesgType=>Fit.MESG_TYPE_RECORD, :units=>"D" });
+        mCurrentFlightFieldRight = createField("", 9, Fit.DATA_TYPE_SINT8, { :mesgType=>Fit.MESG_TYPE_RECORD, :units=>"%" });
+        mCurrentGCTFieldRight = createField("", 11, Fit.DATA_TYPE_SINT16, { :mesgType=>Fit.MESG_TYPE_RECORD, :units=>"ms" });
+        
+        mCurrentPowerField = createField("", 12, Fit.DATA_TYPE_SINT16, { :mesgType=>Fit.MESG_TYPE_RECORD, :units=>"W" });
     }
     
     function onSettingsChanged() {
@@ -106,13 +141,30 @@ class RunScribeDataField extends Ui.DataField {
     }
     
     function compute(info) {
-        if (mFitContributor == null) {
-            mFitContributor = new RunScribeFitContributor(self);
+        if (mSensorLeft != null && mSensorLeft.data != null)  {
+            // Average L/R for combined metric
+            mCurrentBGFieldLeft.setData(mSensorLeft.data.braking_gs);
+            mCurrentIGFieldLeft.setData(mSensorLeft.data.impact_gs);
+            mCurrentFSFieldLeft.setData(mSensorLeft.data.footstrike_type);
+            mCurrentPronationFieldLeft.setData(mSensorLeft.data.pronation_excursion_fs_mp);
+            mCurrentFlightFieldLeft.setData(mSensorLeft.data.flight_ratio);
+            mCurrentGCTFieldLeft.setData(mSensorLeft.data.contact_time);
+            if (mSensorRight != null && mSensorRight.data != null) {
+                mCurrentPowerField.setData((mSensorLeft.data.power + mSensorRight.data.power) * 0.5);
+            }
         }
         
-        mFitContributor.compute(mSensorLeft, mSensorRight);
+        if (mSensorRight != null && mSensorRight.data != null) {
+            mCurrentBGFieldRight.setData(mSensorRight.data.braking_gs);
+            mCurrentIGFieldRight.setData(mSensorRight.data.impact_gs);
+            mCurrentFSFieldRight.setData(mSensorRight.data.footstrike_type);
+            mCurrentPronationFieldRight.setData(mSensorRight.data.pronation_excursion_fs_mp);
+            mCurrentFlightFieldRight.setData(mSensorRight.data.flight_ratio);
+            mCurrentGCTFieldRight.setData(mSensorRight.data.contact_time);
+        }
     }
     
+
     function onLayout(dc) {
         var width = dc.getWidth();
         var height = dc.getHeight();
@@ -284,19 +336,17 @@ class RunScribeDataField extends Ui.DataField {
             drawMetricOffset(dc, met1x, met1y, mMetric1Type);         
             if (mMetricCount >= 2) {
                 drawMetricOffset(dc, met2x, met2y, mMetric2Type);
+	            if (mMetricCount >= 3) {
+	                drawMetricOffset(dc, met3x, met3y, mMetric3Type);
+		            if (mMetricCount == 4) {
+		                drawMetricOffset(dc, met4x, met4y, mMetric4Type);
+		            } 
+	            } 
             }
-            if (mMetricCount >= 3) {
-                drawMetricOffset(dc, met3x, met3y, mMetric3Type);
-            } 
-            if (mMetricCount == 4) {
-                drawMetricOffset(dc, met4x, met4y, mMetric4Type);
-            } 
         } else {
-            var message;
+            var message = "Searching...";
             if (mSensorLeft == null || mSensorRight == null) {
                 message = "No Channel!";
-            } else {
-                message = "Searching...";
             }
             
             dc.drawText(xCenter, yCenter - dc.getFontHeight(Gfx.FONT_MEDIUM) / 2, Gfx.FONT_MEDIUM, message, Gfx.TEXT_JUSTIFY_CENTER);

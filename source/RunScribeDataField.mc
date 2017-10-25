@@ -308,7 +308,7 @@ class RunScribeDataField extends Ui.DataField {
         var metricLeft = getMetric(metricType, mSensorLeft);
         var metricRight = getMetric(metricType, mSensorRight);
         
-        if (metricType == 7) {
+        if (metricType == 7 && mSensorLeft.data != null && mSensorRight.data != null) {
             metricLeft = ((mSensorLeft.data.power + mSensorRight.data.power) / 2).format("%d");
         }
          

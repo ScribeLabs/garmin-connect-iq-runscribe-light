@@ -84,23 +84,23 @@ class RunScribeDataField extends Ui.DataField {
         mSensorLeft = sensorL;
         mSensorRight = sensorR;
         
-        var g = { :mesgType=>Fit.MESG_TYPE_RECORD, :units=>"G" };
+        var g = { :units=>"G" };
 
         mCurrentBGFieldLeft = createField("", 0, Fit.DATA_TYPE_FLOAT, g);
         mCurrentIGFieldLeft = createField("", 2, Fit.DATA_TYPE_FLOAT, g);
-        mCurrentFSFieldLeft = createField("", 4, Fit.DATA_TYPE_SINT8, { :mesgType=>Fit.MESG_TYPE_RECORD });
-        mCurrentPronationFieldLeft = createField("", 6, Fit.DATA_TYPE_SINT16, { :mesgType=>Fit.MESG_TYPE_RECORD, :units=>"D" });
-        mCurrentFlightFieldLeft = createField("", 8, Fit.DATA_TYPE_SINT8, { :mesgType=>Fit.MESG_TYPE_RECORD, :units=>"%" });
-        mCurrentGCTFieldLeft = createField("", 10, Fit.DATA_TYPE_SINT16, { :mesgType=>Fit.MESG_TYPE_RECORD, :units=>"ms" });
+        mCurrentFSFieldLeft = createField("", 4, Fit.DATA_TYPE_SINT8, { });
+        mCurrentPronationFieldLeft = createField("", 6, Fit.DATA_TYPE_SINT16, { :units=>"D" });
+        mCurrentFlightFieldLeft = createField("", 8, Fit.DATA_TYPE_SINT8, { :units=>"%" });
+        mCurrentGCTFieldLeft = createField("", 10, Fit.DATA_TYPE_SINT16, { :units=>"ms" });
 
         mCurrentBGFieldRight = createField("", 1, Fit.DATA_TYPE_FLOAT, g);
         mCurrentIGFieldRight = createField("", 3, Fit.DATA_TYPE_FLOAT, g);
-        mCurrentFSFieldRight = createField("", 5, Fit.DATA_TYPE_SINT8, { :mesgType=>Fit.MESG_TYPE_RECORD });
-        mCurrentPronationFieldRight = createField("", 7, Fit.DATA_TYPE_SINT16, { :mesgType=>Fit.MESG_TYPE_RECORD, :units=>"D" });
-        mCurrentFlightFieldRight = createField("", 9, Fit.DATA_TYPE_SINT8, { :mesgType=>Fit.MESG_TYPE_RECORD, :units=>"%" });
-        mCurrentGCTFieldRight = createField("", 11, Fit.DATA_TYPE_SINT16, { :mesgType=>Fit.MESG_TYPE_RECORD, :units=>"ms" });
+        mCurrentFSFieldRight = createField("", 5, Fit.DATA_TYPE_SINT8, { });
+        mCurrentPronationFieldRight = createField("", 7, Fit.DATA_TYPE_SINT16, { :units=>"D" });
+        mCurrentFlightFieldRight = createField("", 9, Fit.DATA_TYPE_SINT8, { :units=>"%" });
+        mCurrentGCTFieldRight = createField("", 11, Fit.DATA_TYPE_SINT16, { :units=>"ms" });
         
-        mCurrentPowerField = createField("", 12, Fit.DATA_TYPE_SINT16, { :mesgType=>Fit.MESG_TYPE_RECORD, :units=>"W" });
+        mCurrentPowerField = createField("", 12, Fit.DATA_TYPE_SINT16, { :units=>"W" });
     }
     
     function onSettingsChanged() {
@@ -141,29 +141,28 @@ class RunScribeDataField extends Ui.DataField {
     }
     
     function compute(info) {
-        if (mSensorLeft != null && mSensorLeft.data != null)  {
+        if (mSensorLeft != null)  {
             // Average L/R for combined metric
-            mCurrentBGFieldLeft.setData(mSensorLeft.data.braking_gs);
-            mCurrentIGFieldLeft.setData(mSensorLeft.data.impact_gs);
-            mCurrentFSFieldLeft.setData(mSensorLeft.data.footstrike_type);
-            mCurrentPronationFieldLeft.setData(mSensorLeft.data.pronation_excursion_fs_mp);
-            mCurrentFlightFieldLeft.setData(mSensorLeft.data.flight_ratio);
-            mCurrentGCTFieldLeft.setData(mSensorLeft.data.contact_time);
-            if (mSensorRight != null && mSensorRight.data != null) {
-                mCurrentPowerField.setData((mSensorLeft.data.power + mSensorRight.data.power) * 0.5);
+            mCurrentBGFieldLeft.setData(mSensorLeft.braking_gs);
+            mCurrentIGFieldLeft.setData(mSensorLeft.impact_gs);
+            mCurrentFSFieldLeft.setData(mSensorLeft.footstrike_type);
+            mCurrentPronationFieldLeft.setData(mSensorLeft.pronation_excursion_fs_mp);
+            mCurrentFlightFieldLeft.setData(mSensorLeft.flight_ratio);
+            mCurrentGCTFieldLeft.setData(mSensorLeft.contact_time);
+            if (mSensorRight != null) {
+                mCurrentPowerField.setData((mSensorLeft.power + mSensorRight.power) * 0.5);
             }
         }
         
-        if (mSensorRight != null && mSensorRight.data != null) {
-            mCurrentBGFieldRight.setData(mSensorRight.data.braking_gs);
-            mCurrentIGFieldRight.setData(mSensorRight.data.impact_gs);
-            mCurrentFSFieldRight.setData(mSensorRight.data.footstrike_type);
-            mCurrentPronationFieldRight.setData(mSensorRight.data.pronation_excursion_fs_mp);
-            mCurrentFlightFieldRight.setData(mSensorRight.data.flight_ratio);
-            mCurrentGCTFieldRight.setData(mSensorRight.data.contact_time);
+        if (mSensorRight != null) {
+            mCurrentBGFieldRight.setData(mSensorRight.braking_gs);
+            mCurrentIGFieldRight.setData(mSensorRight.impact_gs);
+            mCurrentFSFieldRight.setData(mSensorRight.footstrike_type);
+            mCurrentPronationFieldRight.setData(mSensorRight.pronation_excursion_fs_mp);
+            mCurrentFlightFieldRight.setData(mSensorRight.flight_ratio);
+            mCurrentGCTFieldRight.setData(mSensorRight.contact_time);
         }
     }
-    
 
     function onLayout(dc) {
         var width = dc.getWidth();
@@ -200,11 +199,11 @@ class RunScribeDataField extends Ui.DataField {
         var fontIdx;
         var dimensions;
         
-        var fonts = [Gfx.FONT_XTINY,Gfx.FONT_TINY,Gfx.FONT_SMALL,Gfx.FONT_MEDIUM,Gfx.FONT_LARGE,
-                    Gfx.FONT_NUMBER_MILD,Gfx.FONT_NUMBER_MEDIUM,Gfx.FONT_NUMBER_HOT,Gfx.FONT_NUMBER_THAI_HOT];
+        var fonts = [Gfx.FONT_XTINY, Gfx.FONT_TINY, Gfx.FONT_SMALL, Gfx.FONT_MEDIUM, Gfx.FONT_LARGE,
+                    Gfx.FONT_NUMBER_MILD, Gfx.FONT_NUMBER_MEDIUM, Gfx.FONT_NUMBER_HOT, Gfx.FONT_NUMBER_THAI_HOT];
                      
         //Search through fonts from biggest to smallest
-        for (fontIdx = (fonts.size() - 1); fontIdx > 0; --fontIdx) {
+        for (fontIdx = fonts.size() - 1; fontIdx > 0; --fontIdx) {
             dimensions = dc.getTextDimensions(testString, fonts[fontIdx]);
             if ((dimensions[0] <= width) && (dimensions[1] <= height)) {
                 // If this font fits, it is the biggest one that does
@@ -237,19 +236,19 @@ class RunScribeDataField extends Ui.DataField {
         
     hidden function getMetric(metricType, sensor) {
         var floatFormat = "%.1f";
-        if (sensor != null && sensor.data != null) {
+        if (sensor != null) {
             if (metricType == 1) {
-                return sensor.data.impact_gs.format(floatFormat);
+                return sensor.impact_gs.format(floatFormat);
             } else if (metricType == 2) {
-                return sensor.data.braking_gs.format(floatFormat);
+                return sensor.braking_gs.format(floatFormat);
             } else if (metricType == 3) {
-                return sensor.data.footstrike_type.format("%d");
+                return sensor.footstrike_type.format("%d");
             } else if (metricType == 4) {
-                return sensor.data.pronation_excursion_fs_mp.format(floatFormat);
+                return sensor.pronation_excursion_fs_mp.format(floatFormat);
             } else if (metricType == 5) {
-                return sensor.data.flight_ratio.format(floatFormat);
+                return sensor.flight_ratio.format(floatFormat);
             } else if (metricType == 6) {
-                return sensor.data.contact_time.format("%d");
+                return sensor.contact_time.format("%d");
             }
         }
         return "0";
@@ -273,7 +272,7 @@ class RunScribeDataField extends Ui.DataField {
         if (mUpdateLayout != 0) {
             onLayout(dc);
         }
-        
+
         // Update status
         if (mSensorLeft != null && mSensorRight != null && (mSensorRight.searching == 0 || mSensorLeft.searching == 0)) {
             
@@ -359,7 +358,7 @@ class RunScribeDataField extends Ui.DataField {
         var metricRight = getMetric(metricType, mSensorRight);
         
         if (metricType == 7) {
-            metricLeft = ((mSensorLeft.data.power + mSensorRight.data.power) / 2).format("%d");
+            metricLeft = ((mSensorLeft.power + mSensorRight.power) / 2).format("%d");
         }
          
         dc.drawText(x, y + mMetricTitleY, Gfx.FONT_XTINY, getMetricName(metricType), Gfx.TEXT_JUSTIFY_CENTER);

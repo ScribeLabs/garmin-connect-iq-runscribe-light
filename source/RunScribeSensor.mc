@@ -25,9 +25,9 @@
 using Toybox.Ant as Ant;
 
 class RunScribeSensor extends Ant.GenericChannel {
-    var data;
+
     var searching;
-    
+
     //  Page 0 - Efficiency
     //  FS                      Encoded         1       FS Type         8 bits  [b7/b6 = FS Num % 4, b5=L/R, b4=H/L, b3-b0=FS Type]
     //  Stride Rate             0 to 255        1       steps/min       8 bits
@@ -45,35 +45,15 @@ class RunScribeSensor extends Ant.GenericChannel {
     //  Stance Excursion MP-TO    0 to 127.875      1/8     deg         10 bits
     //  Max Pronation Velocity    0 to 2046         2       deg/sec     10 bits
     //                                                                  56 bits
-    
-    class RunScribeDataPage {
+
+    var contact_time = 0;
+    var flight_ratio = 0.0;
+    var footstrike_type = 0;
+    var impact_gs = 0.0;
+    var braking_gs = 0.0;
+    var power = 0;
+    var pronation_excursion_fs_mp = 0.0;
         
-        var contact_time = 0.0;
-        var flight_ratio = 0.0;
-        var footstrike_type = 0.0;
-        var impact_gs = 0.0;
-        var braking_gs = 0.0;
-        var power = 0.0;
-        var pronation_excursion_fs_mp = 0.0;
-        
-        function parse_page_0(payload) {
-            footstrike_type = payload[1] & 0x0F;
-            contact_time = ((payload[7] & 0x30) << 4) + payload[5];
-            flight_ratio = decode_bits( (((payload[7] & 0xC0) << 2) + payload[6]), -28.0, 8.0 );
-        }
-        
-        function parse_page_1(payload) {
-            impact_gs = payload[1] / 16.0;
-            braking_gs = payload[2] / 16.0;
-            power = ((payload[7] & 0x03) << 8) + payload[3];
-            pronation_excursion_fs_mp = decode_bits( (((payload[7] & 0x0C) << 6) + payload[4]), -51.2, 10.0 );
-        }
-        
-        hidden function decode_bits(x, min_val, scale_factor)	{ 
-            return ((x + min_val*scale_factor) / scale_factor);
-        }
-        
-    }
     
     function initialize(deviceType, rsFreq, rsMesgPeriod) {
         
@@ -97,6 +77,7 @@ class RunScribeSensor extends Ant.GenericChannel {
         // Open the channel
         GenericChannel.open();
         searching = 1;
+
     }
     
     function closeSensor() {
@@ -111,15 +92,12 @@ class RunScribeSensor extends Ant.GenericChannel {
             // Were we searching?
             if (searching == 1) {
                 searching = 0;
-                if (data == null) {
-                    data = new RunScribeDataPage();
-                }
             }
             
             if (0x00 == (payload[0].toNumber() & 0xFF) ) {
-                data.parse_page_0(payload);
+                parse_page_0(payload);
             } else if (0x01 == (payload[0].toNumber() & 0xFF)) {
-                data.parse_page_1(payload);
+                parse_page_1(payload);
             }
         } else if (Ant.MSG_ID_CHANNEL_RESPONSE_EVENT == msg.messageId) {
             if (Ant.MSG_ID_RF_EVENT == (payload[0] & 0xFF)) {
@@ -130,4 +108,22 @@ class RunScribeSensor extends Ant.GenericChannel {
             }
         }
     }
+    
+    hidden function parse_page_0(payload) {
+        footstrike_type = payload[1] & 0x0F;
+        contact_time = ((payload[7] & 0x30) << 4) + payload[5];
+        flight_ratio = decode_bits( (((payload[7] & 0xC0) << 2) + payload[6]), -28.0, 8.0 );
+    }
+    
+    hidden function parse_page_1(payload) {
+        impact_gs = payload[1] / 16.0;
+        braking_gs = payload[2] / 16.0;
+        power = ((payload[7] & 0x03) << 8) + payload[3];
+        pronation_excursion_fs_mp = decode_bits( (((payload[7] & 0x0C) << 6) + payload[4]), -51.2, 10.0 );
+    }
+    
+    hidden function decode_bits(x, min_val, scale_factor)   { 
+        return ((x + min_val*scale_factor) / scale_factor);
+    }
+    
 }

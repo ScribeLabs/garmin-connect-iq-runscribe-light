@@ -79,10 +79,11 @@ class RunScribeDataField extends Ui.DataField {
     
     // Constructor
     function initialize(sensorL, sensorR, screenShape, screenHeight) {
+        DataField.initialize();
+        
         mScreenShape = screenShape;
         mScreenHeight = screenHeight;
         
-        DataField.initialize();
         onSettingsChanged();
         
         mSensorLeft = sensorL;

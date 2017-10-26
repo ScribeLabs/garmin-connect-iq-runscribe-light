@@ -35,6 +35,7 @@ class RunScribeDataField extends Ui.DataField {
     hidden var mMetric4Type = 6; // 0 - None, 1 - Impact GS, 2 - Braking GS, 3 - FS Type, 4 - Pronation, 5 - Flight Ratio, 6 - Contact Time
 
     hidden var mMetricCount;
+    hidden var mVisibleMetricCount;
 
     // Common
     hidden var mMetricTitleY;
@@ -52,6 +53,7 @@ class RunScribeDataField extends Ui.DataField {
     var mSensorRight;
     
     hidden var mScreenShape;
+    hidden var mScreenHeight;
     
     hidden var xCenter;
     hidden var yCenter;
@@ -76,8 +78,10 @@ class RunScribeDataField extends Ui.DataField {
     hidden var mCurrentPowerField;
     
     // Constructor
-    function initialize(sensorL, sensorR, screenShape) {
+    function initialize(sensorL, sensorR, screenShape, screenHeight) {
         mScreenShape = screenShape;
+        mScreenHeight = screenHeight;
+        
         DataField.initialize();
         onSettingsChanged();
         
@@ -168,6 +172,12 @@ class RunScribeDataField extends Ui.DataField {
         var width = dc.getWidth();
         var height = dc.getHeight();
         
+        if (height < mScreenHeight) {
+            mVisibleMetricCount = 1;
+        } else {
+            mVisibleMetricCount = mMetricCount;
+        }
+        
         xCenter = width / 2;
         yCenter = height / 2;
                 
@@ -175,9 +185,9 @@ class RunScribeDataField extends Ui.DataField {
 
         // Compute data width/height for horizintal layouts
         var metricNameFontHeight = dc.getFontHeight(Gfx.FONT_XTINY) + 2;
-        if (mMetricCount == 2) {
+        if (mVisibleMetricCount == 2) {
             width *= 1.6;
-        } else if (mMetricCount == 1) {
+        } else if (mVisibleMetricCount == 1) {
             width *= 2.0;
         }
 
@@ -285,11 +295,11 @@ class RunScribeDataField extends Ui.DataField {
                 yOffset *= 1.15;
             }
         
-            if (mMetricCount == 1) {
+            if (mVisibleMetricCount == 1) {
                 met1x = xCenter;
                 met1y = yCenter;
             }
-            else if (mMetricCount == 2) {
+            else if (mVisibleMetricCount == 2) {
                 met1x = xCenter;
                 met2x = met1x;
                 if (mScreenShape == System.SCREEN_SHAPE_RECTANGLE) {
@@ -304,7 +314,7 @@ class RunScribeDataField extends Ui.DataField {
                 met2x = xCenter + xOffset;
                 met2y = met1y;
             
-                if (mMetricCount == 3) {
+                if (mVisibleMetricCount == 3) {
                     met3x = xCenter;
                     met3y = yCenter + yOffset;  
                 } else {
@@ -319,7 +329,7 @@ class RunScribeDataField extends Ui.DataField {
                 met1y = yCenter - yOffset;
                 met2y = yCenter;
                  
-                if (mMetricCount == 3) {
+                if (mVisibleMetricCount == 3) {
                     met2x = met1x;
                     met3x = met1x;
                     met3y = yCenter + yOffset;
@@ -333,11 +343,11 @@ class RunScribeDataField extends Ui.DataField {
             }
             
             drawMetricOffset(dc, met1x, met1y, mMetric1Type);         
-            if (mMetricCount >= 2) {
+            if (mVisibleMetricCount >= 2) {
                 drawMetricOffset(dc, met2x, met2y, mMetric2Type);
-	            if (mMetricCount >= 3) {
+	            if (mVisibleMetricCount >= 3) {
 	                drawMetricOffset(dc, met3x, met3y, mMetric3Type);
-		            if (mMetricCount == 4) {
+		            if (mVisibleMetricCount == 4) {
 		                drawMetricOffset(dc, met4x, met4y, mMetric4Type);
 		            } 
 	            } 

@@ -28,10 +28,13 @@ class RunScribeDataFieldApp extends App.AppBase {
     
     var mDataField;
     var mScreenShape;
+    var mScreenHeight;
     
     function initialize() {
         AppBase.initialize();
-        mScreenShape = System.getDeviceSettings().screenShape;
+        var settings = System.getDeviceSettings();
+        mScreenShape = settings.screenShape;
+        mScreenHeight = settings.screenHeight;
     }
     
     function onStart(state) {
@@ -51,7 +54,7 @@ class RunScribeDataFieldApp extends App.AppBase {
             sensorRight = null;
         }
         
-        mDataField = new RunScribeDataField(sensorLeft, sensorRight, mScreenShape);
+        mDataField = new RunScribeDataField(sensorLeft, sensorRight, mScreenShape, mScreenHeight);
         
         return [mDataField];
     }

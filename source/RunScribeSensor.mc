@@ -77,7 +77,6 @@ class RunScribeSensor extends Ant.GenericChannel {
         // Open the channel
         GenericChannel.open();
         searching = 1;
-
     }
     
     function closeSensor() {

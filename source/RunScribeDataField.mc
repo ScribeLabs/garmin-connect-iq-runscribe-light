@@ -174,25 +174,46 @@ class RunScribeDataField extends Ui.DataField {
     
     function compute(info) {
         if (mSensorLeft != null)  {
-            // Average L/R for combined metric
-            mCurrentBGFieldLeft.setData(mSensorLeft.braking_gs);
-            mCurrentIGFieldLeft.setData(mSensorLeft.impact_gs);
-            mCurrentFSFieldLeft.setData(mSensorLeft.footstrike_type);
-            mCurrentPronationFieldLeft.setData(mSensorLeft.pronation_excursion_fs_mp);
-            mCurrentFlightFieldLeft.setData(mSensorLeft.flight_ratio);
-            mCurrentGCTFieldLeft.setData(mSensorLeft.contact_time);
+            var braking = mSensorLeft.braking_gs;
+            var impact = mSensorLeft.impact_gs;
+            var footstrike = mSensorLeft.footstrike_type;
+            var pronation = mSensorLeft.pronation_excursion_fs_mp;
+            var flight = mSensorLeft.flight_ratio;
+            var contact = mSensorLeft.contact_time;
+ 
+            // If no right field then taking averages !!
+            if (mCurrentBGFieldRight == null && mSensorRight != null) {
+                // Average left / right recording
+                braking = (braking + mSensorRight.braking_gs) * 0.5;
+                impact = (impact + mSensorRight.impact_gs) * 0.5;
+                footstrike = (footstrike + mSensorRight.footstrike_type) * 0.5;
+                pronation = (pronation + mSensorRight.pronation_excursion_fs_mp) * 0.5;
+                flight = (flight + mSensorRight.flight_ratio) * 0.5;
+                contact = (contact + mSensorRight.contact_time) * 0.5;
+            }
+                            
+            mCurrentBGFieldLeft.setData(braking);
+            mCurrentIGFieldLeft.setData(impact);
+            mCurrentFSFieldLeft.setData(footstrike);
+            mCurrentPronationFieldLeft.setData(pronation);
+            mCurrentFlightFieldLeft.setData(flight);
+            mCurrentGCTFieldLeft.setData(contact);
+            
             if (mSensorRight != null) {
                 mCurrentPowerField.setData((mSensorLeft.power + mSensorRight.power) * 0.5);
             }
         }
         
         if (mSensorRight != null) {
-            mCurrentBGFieldRight.setData(mSensorRight.braking_gs);
-            mCurrentIGFieldRight.setData(mSensorRight.impact_gs);
-            mCurrentFSFieldRight.setData(mSensorRight.footstrike_type);
-            mCurrentPronationFieldRight.setData(mSensorRight.pronation_excursion_fs_mp);
-            mCurrentFlightFieldRight.setData(mSensorRight.flight_ratio);
-            mCurrentGCTFieldRight.setData(mSensorRight.contact_time);
+            if (mCurrentBGFieldRight != null) {
+                // Separate left / right recording
+	            mCurrentBGFieldRight.setData(mSensorRight.braking_gs);
+	            mCurrentIGFieldRight.setData(mSensorRight.impact_gs);
+	            mCurrentFSFieldRight.setData(mSensorRight.footstrike_type);
+	            mCurrentPronationFieldRight.setData(mSensorRight.pronation_excursion_fs_mp);
+	            mCurrentFlightFieldRight.setData(mSensorRight.flight_ratio);
+	            mCurrentGCTFieldRight.setData(mSensorRight.contact_time);
+	       }
         }
     }
 

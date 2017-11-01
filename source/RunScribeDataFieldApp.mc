@@ -37,17 +37,17 @@ class RunScribeDataFieldApp extends App.AppBase {
         mScreenHeight = settings.screenHeight;
     }
     
-    function onStart(state) {
-    }
-    
     function getInitialView() {
         var sensorLeft;
         var sensorRight;
         
-        try {
-            sensorLeft = new RunScribeSensor(11, 38, 2048);
+        try {       
+            var freq = "Freq";
+            var period = getProperty("period");
+            
+            sensorLeft = new RunScribeSensor(11, getProperty("l" + freq), period);
+            sensorRight = new RunScribeSensor(12, getProperty("r" + freq), period);
             sensorLeft.open();
-            sensorRight = new RunScribeSensor(12, 42, 2048);
             sensorRight.open();
         } catch(e instanceof Ant.UnableToAcquireChannelException) {
             sensorLeft = null;

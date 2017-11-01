@@ -26,7 +26,7 @@ using Toybox.Ant as Ant;
 
 class RunScribeSensor extends Ant.GenericChannel {
 
-    var searching;
+    var searching = 1;
 
     //  Page 0 - Efficiency
     //  FS                      Encoded         1       FS Type         8 bits  [b7/b6 = FS Num % 4, b5=L/R, b4=H/L, b3-b0=FS Type]
@@ -53,23 +53,22 @@ class RunScribeSensor extends Ant.GenericChannel {
     var braking_gs = 0.0;
     var power = 0;
     var pronation_excursion_fs_mp = 0.0;
-        
+    var execute = 1;
     
     function initialize(deviceType, rsFreq, rsMesgPeriod) {
         
         // Get the channel
-        var chanAssign = new Ant.ChannelAssignment(Ant.CHANNEL_TYPE_RX_NOT_TX, Ant.NETWORK_PUBLIC);
-        GenericChannel.initialize(method(:onMessage), chanAssign);
+        GenericChannel.initialize(method(:onMessage), new Ant.ChannelAssignment(Ant.CHANNEL_TYPE_RX_NOT_TX, Ant.NETWORK_PUBLIC));
         
         // Set the configuration
         var deviceCfg = new Ant.DeviceConfig( {
-            :deviceNumber => 0,                 //Wildcard our search
+            //:deviceNumber => 0,               // Wildcard our search - Not setting enables wildcard
             :deviceType => deviceType,
             :transmissionType => 1,
             :messagePeriod => rsMesgPeriod,
-            :radioFrequency => rsFreq,          //ANT RS Frequency
-            :searchTimeoutLowPriority => 10,    //Timeout in 25s
-            :searchThreshold => 0} );           //Pair to all transmitting sensors
+            :radioFrequency => rsFreq,          // ANT RS Frequency
+            :searchTimeoutLowPriority => 10,    // Timeout in 25s
+            :searchThreshold => 0} );           // Pair to all transmitting sensors
         GenericChannel.setDeviceConfig(deviceCfg);
     }
     
@@ -92,12 +91,27 @@ class RunScribeSensor extends Ant.GenericChannel {
             if (searching == 1) {
                 searching = 0;
             }
-            
-            if (0x00 == (payload[0].toNumber() & 0xFF) ) {
-                parse_page_0(payload);
-            } else if (0x01 == (payload[0].toNumber() & 0xFF)) {
-                parse_page_1(payload);
-            }
+            if (execute) {
+	    		if (0x00 == (payload[0].toNumber() & 0xFF) ) {
+			        footstrike_type = payload[1] & 0x0F + 1;
+			        contact_time = ((payload[7] & 0x30) << 4) + payload[5];
+			        flight_ratio = ((((payload[7] & 0xC0) << 2) + payload[6]) - 224.0) / 8.0;
+	            } else if (0x01 == (payload[0].toNumber() & 0xFF)) {
+			        impact_gs = payload[1] / 16.0;
+			        braking_gs = payload[2] / 16.0;
+			        power = ((payload[7] & 0x03) << 8) + payload[3];
+			        pronation_excursion_fs_mp = ((((payload[7] & 0x0C) << 6) + payload[4]) - 512.0) / 10.0;
+	            } else if ((payload[0].toNumber() & 0xFF) > 0x0F) {
+			        footstrike_type = payload[0] & 0x0F + 1;
+			        impact_gs = payload[1] / 16.0;
+			        braking_gs = payload[2] / 16.0;
+			        contact_time = ((payload[7] & 0x03) << 8) + payload[3];
+			        flight_ratio = ((((payload[7] & 0x0C) << 6) + payload[4])- 224.0) / 8.0;
+			        power = ((payload[7] & 0x30) << 4) + payload[5];
+			        pronation_excursion_fs_mp = ((((payload[7] & 0xC0) << 2) + payload[6]) - 512.0) / 10.0;
+                    execute = 0;
+	            }
+	        }
         } else if (Ant.MSG_ID_CHANNEL_RESPONSE_EVENT == msg.messageId) {
             if (Ant.MSG_ID_RF_EVENT == (payload[0] & 0xFF)) {
                 if (Ant.MSG_CODE_EVENT_CHANNEL_CLOSED == (payload[1] & 0xFF)) {
@@ -106,23 +120,6 @@ class RunScribeSensor extends Ant.GenericChannel {
                 }
             }
         }
-    }
-    
-    hidden function parse_page_0(payload) {
-        footstrike_type = payload[1] & 0x0F;
-        contact_time = ((payload[7] & 0x30) << 4) + payload[5];
-        flight_ratio = decode_bits( (((payload[7] & 0xC0) << 2) + payload[6]), -224.0, 8.0 );
-    }
-    
-    hidden function parse_page_1(payload) {
-        impact_gs = payload[1] / 16.0;
-        braking_gs = payload[2] / 16.0;
-        power = ((payload[7] & 0x03) << 8) + payload[3];
-        pronation_excursion_fs_mp = decode_bits( (((payload[7] & 0x0C) << 6) + payload[4]), -512.0, 10.0 );
-    }
-    
-    hidden function decode_bits(x, min_val, scale_factor)   { 
-        return ((x + min_val) / scale_factor);
     }
     
 }

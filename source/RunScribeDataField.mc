@@ -87,31 +87,31 @@ class RunScribeDataField extends Ui.DataField {
         mSensorRight = sensorR;
 
         var d = {};
+        var units = "units";
 
         mCurrentFSFieldLeft = createField("", 4, Fit.DATA_TYPE_SINT8, d);
         mCurrentFSFieldRight = createField("", 5, Fit.DATA_TYPE_SINT8, d);
         
-        d["units"] = "G";
+        d[units] = "G";
 
         mCurrentBGFieldLeft = createField("", 0, Fit.DATA_TYPE_FLOAT, d);
         mCurrentIGFieldLeft = createField("", 2, Fit.DATA_TYPE_FLOAT, d);
         mCurrentBGFieldRight = createField("", 1, Fit.DATA_TYPE_FLOAT, d);
         mCurrentIGFieldRight = createField("", 3, Fit.DATA_TYPE_FLOAT, d);
 
-
-        d["units"] = "D";
+        d[units] = "D";
         mCurrentPronationFieldLeft = createField("", 6, Fit.DATA_TYPE_SINT16, d);
         mCurrentPronationFieldRight = createField("", 7, Fit.DATA_TYPE_SINT16, d);
 
-        d["units"] = "%";
+        d[units] = "%";
         mCurrentFlightFieldLeft = createField("", 8, Fit.DATA_TYPE_SINT8, d);
         mCurrentFlightFieldRight = createField("", 9, Fit.DATA_TYPE_SINT8, d);
 
-        d["units"] = "ms";
+        d[units] = "ms";
         mCurrentGCTFieldLeft = createField("", 10, Fit.DATA_TYPE_SINT16, d);
         mCurrentGCTFieldRight = createField("", 11, Fit.DATA_TYPE_SINT16, d);
         
-        d["units"] = "W";
+        d[units] = "W";
         mCurrentPowerField = createField("", 12, Fit.DATA_TYPE_SINT16, d);
     }
     
@@ -304,6 +304,9 @@ class RunScribeDataField extends Ui.DataField {
 
         // Update status
         if (mSensorLeft != null && mSensorRight != null && (mSensorRight.searching == 0 || mSensorLeft.searching == 0)) {
+            
+            mSensorLeft.execute = 1;
+            mSensorRight.execute = 1;
             
             var met1x, met1y, met2x = 0, met2y = 0, met3x = 0, met3y = 0, met4x = 0, met4y = 0;
             

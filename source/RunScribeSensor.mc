@@ -92,16 +92,17 @@ class RunScribeSensor extends Ant.GenericChannel {
                 searching = 0;
             }
             if (execute) {
-	    		if (0x00 == (payload[0].toNumber() & 0xFF) ) {
+                var page = (payload[0] & 0xFF);
+	    		if (0x00 == page) {
 			        footstrike_type = payload[1] & 0x0F + 1;
 			        contact_time = ((payload[7] & 0x30) << 4) + payload[5];
 			        flight_ratio = ((((payload[7] & 0xC0) << 2) + payload[6]) - 224.0) / 8.0;
-	            } else if (0x01 == (payload[0].toNumber() & 0xFF)) {
+	            } else if (0x01 == page) {
 			        impact_gs = payload[1] / 16.0;
 			        braking_gs = payload[2] / 16.0;
 			        power = ((payload[7] & 0x03) << 8) + payload[3];
 			        pronation_excursion_fs_mp = ((((payload[7] & 0x0C) << 6) + payload[4]) - 512.0) / 10.0;
-	            } else if ((payload[0].toNumber() & 0xFF) > 0x0F) {
+	            } else if (page > 0x0F) {
 			        footstrike_type = payload[0] & 0x0F + 1;
 			        impact_gs = payload[1] / 16.0;
 			        braking_gs = payload[2] / 16.0;

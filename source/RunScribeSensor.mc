@@ -111,18 +111,18 @@ class RunScribeSensor extends Ant.GenericChannel {
     hidden function parse_page_0(payload) {
         footstrike_type = payload[1] & 0x0F;
         contact_time = ((payload[7] & 0x30) << 4) + payload[5];
-        flight_ratio = decode_bits( (((payload[7] & 0xC0) << 2) + payload[6]), -28.0, 8.0 );
+        flight_ratio = decode_bits( (((payload[7] & 0xC0) << 2) + payload[6]), -224.0, 8.0 );
     }
     
     hidden function parse_page_1(payload) {
         impact_gs = payload[1] / 16.0;
         braking_gs = payload[2] / 16.0;
         power = ((payload[7] & 0x03) << 8) + payload[3];
-        pronation_excursion_fs_mp = decode_bits( (((payload[7] & 0x0C) << 6) + payload[4]), -51.2, 10.0 );
+        pronation_excursion_fs_mp = decode_bits( (((payload[7] & 0x0C) << 6) + payload[4]), -512.0, 10.0 );
     }
     
     hidden function decode_bits(x, min_val, scale_factor)   { 
-        return ((x + min_val*scale_factor) / scale_factor);
+        return ((x + min_val) / scale_factor);
     }
     
 }

@@ -29,10 +29,10 @@ using Toybox.FitContributor as Fit;
 
 class RunScribeDataField extends Ui.DataField {
     
-    hidden var mMetric1Type = 3; // 1 - Impact GS, 2 - Braking GS, 3 - FS Type, 4 - Pronation, 5 - Flight Ratio, 6 - Contact Time
-    hidden var mMetric2Type = 1; // 1 - Impact GS, 2 - Braking GS, 3 - FS Type, 4 - Pronation, 5 - Flight Ratio, 6 - Contact Time
-    hidden var mMetric3Type = 2; // 0 - None, 1 - Impact GS, 2 - Braking GS, 3 - FS Type, 4 - Pronation, 5 - Flight Ratio, 6 - Contact Time
-    hidden var mMetric4Type = 6; // 0 - None, 1 - Impact GS, 2 - Braking GS, 3 - FS Type, 4 - Pronation, 5 - Flight Ratio, 6 - Contact Time
+    hidden var mMetric1Type; // 1 - Impact GS, 2 - Braking GS, 3 - FS Type, 4 - Pronation, 5 - Flight Ratio, 6 - Contact Time
+    hidden var mMetric2Type; // 1 - Impact GS, 2 - Braking GS, 3 - FS Type, 4 - Pronation, 5 - Flight Ratio, 6 - Contact Time
+    hidden var mMetric3Type; // 0 - None, 1 - Impact GS, 2 - Braking GS, 3 - FS Type, 4 - Pronation, 5 - Flight Ratio, 6 - Contact Time
+    hidden var mMetric4Type; // 0 - None, 1 - Impact GS, 2 - Braking GS, 3 - FS Type, 4 - Pronation, 5 - Flight Ratio, 6 - Contact Time
 
     hidden var mMetricCount;
     hidden var mVisibleMetricCount;
@@ -42,9 +42,6 @@ class RunScribeDataField extends Ui.DataField {
     hidden var mMetricValueY;
     hidden var mMetricValueOffsetX;
         
-    // Fit Contributor
-    hidden var mFitContributor;
-    
     // Font values
     hidden var mDataFont;
     hidden var mDataFontHeight;
@@ -88,24 +85,34 @@ class RunScribeDataField extends Ui.DataField {
         
         mSensorLeft = sensorL;
         mSensorRight = sensorR;
-        
-        var g = { :units=>"G" };
 
-        mCurrentBGFieldLeft = createField("", 0, Fit.DATA_TYPE_FLOAT, g);
-        mCurrentIGFieldLeft = createField("", 2, Fit.DATA_TYPE_FLOAT, g);
-        mCurrentFSFieldLeft = createField("", 4, Fit.DATA_TYPE_SINT8, { });
-        mCurrentPronationFieldLeft = createField("", 6, Fit.DATA_TYPE_SINT16, { :units=>"D" });
-        mCurrentFlightFieldLeft = createField("", 8, Fit.DATA_TYPE_SINT8, { :units=>"%" });
-        mCurrentGCTFieldLeft = createField("", 10, Fit.DATA_TYPE_SINT16, { :units=>"ms" });
+        var d = {};
 
-        mCurrentBGFieldRight = createField("", 1, Fit.DATA_TYPE_FLOAT, g);
-        mCurrentIGFieldRight = createField("", 3, Fit.DATA_TYPE_FLOAT, g);
-        mCurrentFSFieldRight = createField("", 5, Fit.DATA_TYPE_SINT8, { });
-        mCurrentPronationFieldRight = createField("", 7, Fit.DATA_TYPE_SINT16, { :units=>"D" });
-        mCurrentFlightFieldRight = createField("", 9, Fit.DATA_TYPE_SINT8, { :units=>"%" });
-        mCurrentGCTFieldRight = createField("", 11, Fit.DATA_TYPE_SINT16, { :units=>"ms" });
+        mCurrentFSFieldLeft = createField("", 4, Fit.DATA_TYPE_SINT8, d);
+        mCurrentFSFieldRight = createField("", 5, Fit.DATA_TYPE_SINT8, d);
         
-        mCurrentPowerField = createField("", 12, Fit.DATA_TYPE_SINT16, { :units=>"W" });
+        d["units"] = "G";
+
+        mCurrentBGFieldLeft = createField("", 0, Fit.DATA_TYPE_FLOAT, d);
+        mCurrentIGFieldLeft = createField("", 2, Fit.DATA_TYPE_FLOAT, d);
+        mCurrentBGFieldRight = createField("", 1, Fit.DATA_TYPE_FLOAT, d);
+        mCurrentIGFieldRight = createField("", 3, Fit.DATA_TYPE_FLOAT, d);
+
+
+        d["units"] = "D";
+        mCurrentPronationFieldLeft = createField("", 6, Fit.DATA_TYPE_SINT16, d);
+        mCurrentPronationFieldRight = createField("", 7, Fit.DATA_TYPE_SINT16, d);
+
+        d["units"] = "%";
+        mCurrentFlightFieldLeft = createField("", 8, Fit.DATA_TYPE_SINT8, d);
+        mCurrentFlightFieldRight = createField("", 9, Fit.DATA_TYPE_SINT8, d);
+
+        d["units"] = "ms";
+        mCurrentGCTFieldLeft = createField("", 10, Fit.DATA_TYPE_SINT16, d);
+        mCurrentGCTFieldRight = createField("", 11, Fit.DATA_TYPE_SINT16, d);
+        
+        d["units"] = "W";
+        mCurrentPowerField = createField("", 12, Fit.DATA_TYPE_SINT16, d);
     }
     
     function onSettingsChanged() {
@@ -228,17 +235,23 @@ class RunScribeDataField extends Ui.DataField {
     hidden function getMetricName(metricType) {
         if (metricType == 1) {
             return "Impact Gs";
-        } else if (metricType == 2) {
+        } 
+        if (metricType == 2) {
             return "Braking Gs";
-        } else if (metricType == 3) {
+        } 
+        if (metricType == 3) {
             return "Footstrike";
-        } else if (metricType == 4) {
+        } 
+        if (metricType == 4) {
             return "Pronation";
-        } else if (metricType == 5) {
+        } 
+        if (metricType == 5) {
             return "Flight (%)";
-        } else if (metricType == 6) {
+        } 
+        if (metricType == 6) {
             return "GCT (ms)";
-        } else if (metricType == 7) {
+        } 
+        if (metricType == 7) {
             return "Power (W)";
         }
         
@@ -250,15 +263,20 @@ class RunScribeDataField extends Ui.DataField {
         if (sensor != null) {
             if (metricType == 1) {
                 return sensor.impact_gs.format(floatFormat);
-            } else if (metricType == 2) {
+            } 
+            if (metricType == 2) {
                 return sensor.braking_gs.format(floatFormat);
-            } else if (metricType == 3) {
+            } 
+            if (metricType == 3) {
                 return sensor.footstrike_type.format("%d");
-            } else if (metricType == 4) {
+            } 
+            if (metricType == 4) {
                 return sensor.pronation_excursion_fs_mp.format(floatFormat);
-            } else if (metricType == 5) {
+            } 
+            if (metricType == 5) {
                 return sensor.flight_ratio.format(floatFormat);
-            } else if (metricType == 6) {
+            } 
+            if (metricType == 6) {
                 return sensor.contact_time.format("%d");
             }
         }

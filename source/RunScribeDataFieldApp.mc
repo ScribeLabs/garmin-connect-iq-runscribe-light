@@ -54,7 +54,8 @@ class RunScribeDataFieldApp extends App.AppBase {
             sensorRight = null;
         }
         
-        mDataField = new RunScribeDataField(sensorLeft, sensorRight, mScreenShape, mScreenHeight);
+        var recordedChannelCount = 2;
+        mDataField = new RunScribeDataField(sensorLeft, sensorRight, mScreenShape, mScreenHeight, recordedChannelCount);
         
         return [mDataField];
     }

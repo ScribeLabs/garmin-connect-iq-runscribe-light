@@ -75,7 +75,7 @@ class RunScribeDataField extends Ui.DataField {
     hidden var mCurrentPowerField;
     
     // Constructor
-    function initialize(sensorL, sensorR, screenShape, screenHeight) {
+    function initialize(sensorL, sensorR, screenShape, screenHeight, storedChannelCount) {
         DataField.initialize();
         
         mScreenShape = screenShape;
@@ -89,30 +89,50 @@ class RunScribeDataField extends Ui.DataField {
         var d = {};
         var units = "units";
 
-        mCurrentFSFieldLeft = createField("", 4, Fit.DATA_TYPE_SINT8, d);
-        mCurrentFSFieldRight = createField("", 5, Fit.DATA_TYPE_SINT8, d);
-        
+        var offset = 0;
+
+        if (storedChannelCount == 2) {
+	        mCurrentFSFieldRight = createField("", 8, Fit.DATA_TYPE_SINT8, d);
+        } else {
+            offset = 12;
+        }	
+
+        mCurrentFSFieldLeft = createField("", 2 + offset, Fit.DATA_TYPE_SINT8, d);
+
         d[units] = "G";
+        
+        if (storedChannelCount == 2) {         
+	        mCurrentBGFieldRight = createField("", 6, Fit.DATA_TYPE_FLOAT, d);
+	        mCurrentIGFieldRight = createField("", 7, Fit.DATA_TYPE_FLOAT, d);
+        }	
 
-        mCurrentBGFieldLeft = createField("", 0, Fit.DATA_TYPE_FLOAT, d);
-        mCurrentIGFieldLeft = createField("", 2, Fit.DATA_TYPE_FLOAT, d);
-        mCurrentBGFieldRight = createField("", 1, Fit.DATA_TYPE_FLOAT, d);
-        mCurrentIGFieldRight = createField("", 3, Fit.DATA_TYPE_FLOAT, d);
-
+        mCurrentBGFieldLeft = createField("", 0 + offset, Fit.DATA_TYPE_FLOAT, d);
+        mCurrentIGFieldLeft = createField("", 1 + offset, Fit.DATA_TYPE_FLOAT, d);
+        
         d[units] = "D";
-        mCurrentPronationFieldLeft = createField("", 6, Fit.DATA_TYPE_SINT16, d);
-        mCurrentPronationFieldRight = createField("", 7, Fit.DATA_TYPE_SINT16, d);
+        
+        if (storedChannelCount == 2) {         
+	        mCurrentPronationFieldRight = createField("", 9, Fit.DATA_TYPE_SINT16, d);
+        }
+        
+        mCurrentPronationFieldLeft = createField("", 3 + offset, Fit.DATA_TYPE_SINT16, d);
+	    
+	    d[units] = "%";
+	    if (storedChannelCount == 2) {
+	        mCurrentFlightFieldRight = createField("", 10, Fit.DATA_TYPE_SINT8, d);
+		}
 
-        d[units] = "%";
-        mCurrentFlightFieldLeft = createField("", 8, Fit.DATA_TYPE_SINT8, d);
-        mCurrentFlightFieldRight = createField("", 9, Fit.DATA_TYPE_SINT8, d);
+        mCurrentFlightFieldLeft = createField("", 4 + offset, Fit.DATA_TYPE_SINT8, d);
+	   
+	    d[units] = "ms";
+        if (storedChannelCount == 2) {
+	        mCurrentGCTFieldRight = createField("", 11, Fit.DATA_TYPE_SINT16, d);
+        } 
 
-        d[units] = "ms";
-        mCurrentGCTFieldLeft = createField("", 10, Fit.DATA_TYPE_SINT16, d);
-        mCurrentGCTFieldRight = createField("", 11, Fit.DATA_TYPE_SINT16, d);
+        mCurrentGCTFieldLeft = createField("", 5 + offset, Fit.DATA_TYPE_SINT16, d);
         
         d[units] = "W";
-        mCurrentPowerField = createField("", 12, Fit.DATA_TYPE_SINT16, d);
+        mCurrentPowerField = createField("", 18, Fit.DATA_TYPE_SINT16, d);
     }
     
     function onSettingsChanged() {

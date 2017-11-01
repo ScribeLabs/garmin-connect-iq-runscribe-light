@@ -28,6 +28,12 @@
     <string id="flight_ratio_label_right">Flight Ratio Right</string>
     <string id="contact_time_label_right">Contact time Right</string>
 
+    <string id="impact_gs_label">Impact Gs</string>
+    <string id="braking_gs_label">Braking Gs</string>
+    <string id="fs_type_label">FootStrike Type</string>
+    <string id="pronation_label">Pronation Excursion</string>
+    <string id="flight_ratio_label">Flight Ratio</string>
+    <string id="contact_time_label">Contact time</string>
     <string id="power_label">RunScribe Power</string>
 
 	<!-- Metrics labels + units -->

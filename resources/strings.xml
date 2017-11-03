@@ -1,25 +1,28 @@
 <strings>
-	<string id="AppName">RunScribe Light</string>
-	<string id="app_version_title">App version</string>
+    <string id="AppName">RunScribe Beta</string>
+    <string id="app_version_title">App version</string>
 
-	<string id="first_metric_label">First metric</string>
-	<string id="second_metric_label">Second metric</string>
-	<string id="third_metric_label">Third metric</string>
-	<string id="fourth_metric_label">Fourth metric</string>
-	 
-	<string id="left_frequency_label">Left frequency</string>
-	<string id="right_frequency_label">Right frequency</string>
-	<string id="period">Period</string>
-	
-	<string id="none">None</string>
+    <string id="first_metric_label">First metric</string>
+    <string id="second_metric_label">Second metric</string>
+    <string id="third_metric_label">Third metric</string>
+    <string id="fourth_metric_label">Fourth metric</string>
+    
+    <!-- 
+    <string id="left_frequency_label">Left frequency</string>
+    <string id="right_frequency_label">Right frequency</string>
+    <string id="period">Period</string>
+    -->
+    <string id="lrmetrics">L/R recording</string>
+    
+    <string id="none">None</string>
 
-	<!-- Metrics labels for FIT file -->
-	<string id="impact_gs_label_left">Impact Gs Left</string>
-	<string id="braking_gs_label_left">Braking Gs Left</string>
-	<string id="fs_type_label_left">FootStrike Type Left</string>
-	<string id="pronation_label_left">Pronation Excursion Left</string>
-	<string id="flight_ratio_label_left">Flight Ratio Left</string>
-	<string id="contact_time_label_left">Contact time Left</string>
+    <!-- Metrics labels for FIT file -->
+    <string id="impact_gs_label_left">Impact Gs Left</string>
+    <string id="braking_gs_label_left">Braking Gs Left</string>
+    <string id="fs_type_label_left">FootStrike Type Left</string>
+    <string id="pronation_label_left">Pronation Excursion Left</string>
+    <string id="flight_ratio_label_left">Flight Ratio Left</string>
+    <string id="contact_time_label_left">Contact time Left</string>
 
     <string id="impact_gs_label_right">Impact Gs Right</string>
     <string id="braking_gs_label_right">Braking Gs Right</string>
@@ -36,20 +39,20 @@
     <string id="contact_time_label">Contact time</string>
     <string id="power_label">RunScribe Power</string>
 
-	<!-- Metrics labels + units -->
-	<string id="impact_gs_app_label">Impact Gs (G)</string>
-	<string id="braking_gs_app_label">Braking Gs (G)</string>
-	<string id="fs_type_app_label">FootStrike</string>
-	<string id="pronation_app_label">Pronation (D)</string>
-	<string id="flight_ratio_app_label">Flight (%)</string>
-	<string id="contact_time_app_label">GCT (ms)</string>
-	<string id="power_app_label">RunScribe Power (W)</string>
+    <!-- Metrics labels + units -->
+    <string id="impact_gs_app_label">Impact Gs (G)</string>
+    <string id="braking_gs_app_label">Braking Gs (G)</string>
+    <string id="fs_type_app_label">FootStrike</string>
+    <string id="pronation_app_label">Pronation (D)</string>
+    <string id="flight_ratio_app_label">Flight (%)</string>
+    <string id="contact_time_app_label">GCT (ms)</string>
+    <string id="power_app_label">RunScribe Power (W)</string>
 
-	<!-- Metrics Units -->
-	<string id="impact_braking_gs_units">G</string>
-	<string id="pronation_units">D</string>
-	<string id="flight_ratio_units">%</string>
-	<string id="contact_time_units">ms</string>
-	<string id="power_units">W</string>
-	<string id="fs_type_units"> </string>
+    <!-- Metrics Units -->
+    <string id="impact_braking_gs_units">G</string>
+    <string id="pronation_units">D</string>
+    <string id="flight_ratio_units">%</string>
+    <string id="contact_time_units">ms</string>
+    <string id="power_units">W</string>
+    <string id="fs_type_units"> </string>
 </strings>

@@ -41,12 +41,17 @@ class RunScribeDataFieldApp extends App.AppBase {
         var sensorLeft;
         var sensorRight;
         
-        try {       
+        try {
+            /*
             var freq = "Freq";
             var period = getProperty("period");
             
             sensorLeft = new RunScribeSensor(11, getProperty("l" + freq), period);
             sensorRight = new RunScribeSensor(12, getProperty("r" + freq), period);
+            */
+            
+            sensorLeft = new RunScribeSensor(11, 62, 2048);
+            sensorRight = new RunScribeSensor(12, 64, 2048);
             sensorLeft.open();
             sensorRight.open();
         } catch(e instanceof Ant.UnableToAcquireChannelException) {
@@ -54,9 +59,13 @@ class RunScribeDataFieldApp extends App.AppBase {
             sensorRight = null;
         }
         
-        var recordedChannelCount = 2;
+        var lrRecording = getProperty("lrmetrics");
+        var recordedChannelCount = 1;
+        if (lrRecording == true) {
+            recordedChannelCount = 2;
+        }
+
         mDataField = new RunScribeDataField(sensorLeft, sensorRight, mScreenShape, mScreenHeight, recordedChannelCount);
-        
         return [mDataField];
     }
     

@@ -54,6 +54,7 @@
         </settingConfig>
     </setting>
 
+    <!-- 
     <setting propertyKey="@Properties.lFreq" title="@Strings.left_frequency_label">
         <settingConfig type="numeric" min="2" max="80" />
     </setting>      
@@ -62,6 +63,9 @@
     </setting>
     <setting propertyKey="@Properties.period" title="@Strings.period">
         <settingConfig type="numeric" min="2048" max="32768" />
-    </setting>      
-
+    </setting>
+     -->  
+    <setting propertyKey="@Properties.lrmetrics" title="@Strings.lrmetrics">
+        <settingConfig type="boolean"/>
+    </setting>    
 </settings>

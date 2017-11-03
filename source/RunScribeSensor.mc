@@ -62,7 +62,7 @@ class RunScribeSensor extends Ant.GenericChannel {
         
         // Set the configuration
         var deviceCfg = new Ant.DeviceConfig( {
-            //:deviceNumber => 0,               // Wildcard our search - Not setting enables wildcard
+            :deviceNumber => 0,               // Wildcard our search - Not setting enables wildcard
             :deviceType => deviceType,
             :transmissionType => 1,
             :messagePeriod => rsMesgPeriod,
@@ -92,7 +92,7 @@ class RunScribeSensor extends Ant.GenericChannel {
                 searching = 0;
             }
             if (execute) {
-                var page = (payload[0] & 0xFF);
+                var page = (payload[0].toNumber() & 0xFF);
                 /*
 	    		if (0x00 == page) {
 			        footstrike_type = payload[1] & 0x0F + 1;

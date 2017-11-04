@@ -174,6 +174,8 @@ class RunScribeDataField extends Ui.DataField {
     
     function compute(info) {
         if (mSensorLeft != null)  {
+            mSensorLeft.execute = 1;
+
             var braking = mSensorLeft.braking_gs;
             var impact = mSensorLeft.impact_gs;
             var footstrike = mSensorLeft.footstrike_type;
@@ -205,6 +207,8 @@ class RunScribeDataField extends Ui.DataField {
         }
         
         if (mSensorRight != null) {
+            mSensorRight.execute = 1; 
+        
             if (mCurrentBGFieldRight != null) {
                 // Separate left / right recording
                 mCurrentBGFieldRight.setData(mSensorRight.braking_gs);
@@ -345,10 +349,6 @@ class RunScribeDataField extends Ui.DataField {
 
         // Update status
         if (mSensorLeft != null && mSensorRight != null && (mSensorRight.searching == 0 || mSensorLeft.searching == 0)) {
-            
-            mSensorLeft.execute = 1;
-            mSensorRight.execute = 1;
-            
             var met1x, met1y, met2x = 0, met2y = 0, met3x = 0, met3y = 0, met4x = 0, met4y = 0;
             
             var yOffset = yCenter * 0.55;

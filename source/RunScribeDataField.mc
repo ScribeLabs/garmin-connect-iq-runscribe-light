@@ -175,7 +175,6 @@ class RunScribeDataField extends Ui.DataField {
             mSensorLeft = null;
             try {
                 mSensorLeft = new RunScribeSensor(11, 62, 8192);
-                //sensorRight = new RunScribeSensor(12, 64, 8192);
             } catch(e instanceof Ant.UnableToAcquireChannelException) {
                 mSensorLeft = null;
             }

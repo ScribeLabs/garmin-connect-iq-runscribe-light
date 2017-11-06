@@ -75,7 +75,7 @@ class RunScribeDataField extends Ui.DataField {
     hidden var mCurrentPowerField;
     
     // Constructor
-    function initialize(sensorL, sensorR, screenShape, screenHeight, storedChannelCount) {
+    function initialize(screenShape, screenHeight, storedChannelCount) {
         DataField.initialize();
         
         mScreenShape = screenShape;
@@ -83,28 +83,25 @@ class RunScribeDataField extends Ui.DataField {
         
         onSettingsChanged();
         
-        mSensorLeft = sensorL;
-        mSensorRight = sensorR;
-
         var d = {};
         var units = "units";
 
         var offset = 0;
 
         if (storedChannelCount == 2) {
-            mCurrentFSFieldRight = createField("", 8, Fit.DATA_TYPE_SINT8, d);
+	        mCurrentFSFieldRight = createField("", 8, Fit.DATA_TYPE_SINT8, d);
         } else {
             offset = 12;
-        }    
+        }	
 
         mCurrentFSFieldLeft = createField("", 2 + offset, Fit.DATA_TYPE_SINT8, d);
 
         d[units] = "G";
         
         if (storedChannelCount == 2) {         
-            mCurrentBGFieldRight = createField("", 6, Fit.DATA_TYPE_FLOAT, d);
-            mCurrentIGFieldRight = createField("", 7, Fit.DATA_TYPE_FLOAT, d);
-        }    
+	        mCurrentBGFieldRight = createField("", 6, Fit.DATA_TYPE_FLOAT, d);
+	        mCurrentIGFieldRight = createField("", 7, Fit.DATA_TYPE_FLOAT, d);
+        }	
 
         mCurrentBGFieldLeft = createField("", 0 + offset, Fit.DATA_TYPE_FLOAT, d);
         mCurrentIGFieldLeft = createField("", 1 + offset, Fit.DATA_TYPE_FLOAT, d);
@@ -112,21 +109,21 @@ class RunScribeDataField extends Ui.DataField {
         d[units] = "D";
         
         if (storedChannelCount == 2) {         
-            mCurrentPronationFieldRight = createField("", 9, Fit.DATA_TYPE_SINT16, d);
+	        mCurrentPronationFieldRight = createField("", 9, Fit.DATA_TYPE_SINT16, d);
         }
         
         mCurrentPronationFieldLeft = createField("", 3 + offset, Fit.DATA_TYPE_SINT16, d);
-        
-        d[units] = "%";
-        if (storedChannelCount == 2) {
-            mCurrentFlightFieldRight = createField("", 10, Fit.DATA_TYPE_SINT8, d);
-        }
+	    
+	    d[units] = "%";
+	    if (storedChannelCount == 2) {
+	        mCurrentFlightFieldRight = createField("", 10, Fit.DATA_TYPE_SINT8, d);
+		}
 
         mCurrentFlightFieldLeft = createField("", 4 + offset, Fit.DATA_TYPE_SINT8, d);
-       
-        d[units] = "ms";
+	   
+	    d[units] = "ms";
         if (storedChannelCount == 2) {
-            mCurrentGCTFieldRight = createField("", 11, Fit.DATA_TYPE_SINT16, d);
+	        mCurrentGCTFieldRight = createField("", 11, Fit.DATA_TYPE_SINT16, d);
         } 
 
         mCurrentGCTFieldLeft = createField("", 5 + offset, Fit.DATA_TYPE_SINT16, d);
@@ -173,9 +170,22 @@ class RunScribeDataField extends Ui.DataField {
     }
     
     function compute(info) {
-        if (mSensorLeft != null)  {
-            mSensorLeft.execute = 1;
+    
+        if (mSensorLeft == null || !mSensorLeft.isChannelOpen) {
+            mSensorLeft = null;
+            try {
+                mSensorLeft = new RunScribeSensor(11, 62, 8192);
+                //sensorRight = new RunScribeSensor(12, 64, 8192);
+            } catch(e instanceof Ant.UnableToAcquireChannelException) {
+                mSensorLeft = null;
+            }
+        } else {
 
+            ++mSensorLeft.idleTime;
+			if (mSensorLeft.idleTime > 20) {
+    			mSensorLeft.closeChannel();
+			}
+        
             var braking = mSensorLeft.braking_gs;
             var impact = mSensorLeft.impact_gs;
             var footstrike = mSensorLeft.footstrike_type;
@@ -206,18 +216,29 @@ class RunScribeDataField extends Ui.DataField {
             }
         }
         
-        if (mSensorRight != null) {
-            mSensorRight.execute = 1; 
-        
+        if (mSensorRight == null || !mSensorRight.isChannelOpen) {
+            mSensorRight = null;
+            try {
+                mSensorRight = new RunScribeSensor(12, 64, 8192);
+            } catch(e instanceof Ant.UnableToAcquireChannelException) {
+                mSensorRight = null;
+            }
+        } else {
+
+            ++mSensorRight.idleTime;
+            if (mSensorRight.idleTime > 20) {
+                mSensorRight.closeChannel();
+            }
+            
             if (mCurrentBGFieldRight != null) {
                 // Separate left / right recording
-                mCurrentBGFieldRight.setData(mSensorRight.braking_gs);
-                mCurrentIGFieldRight.setData(mSensorRight.impact_gs);
-                mCurrentFSFieldRight.setData(mSensorRight.footstrike_type);
-                mCurrentPronationFieldRight.setData(mSensorRight.pronation_excursion_fs_mp);
-                mCurrentFlightFieldRight.setData(mSensorRight.flight_ratio);
-                mCurrentGCTFieldRight.setData(mSensorRight.contact_time);
-           }
+	            mCurrentBGFieldRight.setData(mSensorRight.braking_gs);
+	            mCurrentIGFieldRight.setData(mSensorRight.impact_gs);
+	            mCurrentFSFieldRight.setData(mSensorRight.footstrike_type);
+	            mCurrentPronationFieldRight.setData(mSensorRight.pronation_excursion_fs_mp);
+	            mCurrentFlightFieldRight.setData(mSensorRight.flight_ratio);
+	            mCurrentGCTFieldRight.setData(mSensorRight.contact_time);
+	       }
         }
     }
 
@@ -349,6 +370,7 @@ class RunScribeDataField extends Ui.DataField {
 
         // Update status
         if (mSensorLeft != null && mSensorRight != null && (mSensorRight.searching == 0 || mSensorLeft.searching == 0)) {
+            
             var met1x, met1y, met2x = 0, met2y = 0, met3x = 0, met3y = 0, met4x = 0, met4y = 0;
             
             var yOffset = yCenter * 0.55;
@@ -408,15 +430,15 @@ class RunScribeDataField extends Ui.DataField {
             drawMetricOffset(dc, met1x, met1y, mMetric1Type);         
             if (mVisibleMetricCount >= 2) {
                 drawMetricOffset(dc, met2x, met2y, mMetric2Type);
-                if (mVisibleMetricCount >= 3) {
-                    drawMetricOffset(dc, met3x, met3y, mMetric3Type);
-                    if (mVisibleMetricCount == 4) {
-                        drawMetricOffset(dc, met4x, met4y, mMetric4Type);
-                    } 
-                } 
+	            if (mVisibleMetricCount >= 3) {
+	                drawMetricOffset(dc, met3x, met3y, mMetric3Type);
+		            if (mVisibleMetricCount == 4) {
+		                drawMetricOffset(dc, met4x, met4y, mMetric4Type);
+		            } 
+	            } 
             }
         } else {
-            var message = "Searching...";
+            var message = "Searching(21)...";
             if (mSensorLeft == null || mSensorRight == null) {
                 message = "No Channel!";
             }

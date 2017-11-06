@@ -53,33 +53,37 @@ class RunScribeSensor extends Ant.GenericChannel {
     var braking_gs = 0.0;
     var power = 0;
     var pronation_excursion_fs_mp = 0.0;
-    var execute = 1;
+
+    // Ant channel & states
+	var isChannelOpen;
+    var idleTime;
     
-    function initialize(deviceType, rsFreq, rsMesgPeriod) {
-        
+    
+    function initialize(rsDeviceType, rsFreq, rsMesgPeriod) {
         // Get the channel
         GenericChannel.initialize(method(:onMessage), new Ant.ChannelAssignment(Ant.CHANNEL_TYPE_RX_NOT_TX, Ant.NETWORK_PUBLIC));
+
+        GenericChannel.setDeviceConfig(new Ant.DeviceConfig( {
+            	:deviceNumber => 0,               // Wildcard our search - Not setting enables wildcard
+            	:deviceType => rsDeviceType,
+            	:transmissionType => 1,
+            	:messagePeriod => rsMesgPeriod,
+            	:radioFrequency => rsFreq,          // ANT RS Frequency
+            	:searchTimeoutLowPriority => 10,    // Timeout in 2.5s (25sec)
+            	:searchTimeoutHighPriority => 2,    // Timeout in 2.5s (5sec)
+            	:searchThreshold => 0} )            // Farthest        
+        );
         
-        // Set the configuration
-        var deviceCfg = new Ant.DeviceConfig( {
-            :deviceNumber => 0,               // Wildcard our search - Not setting enables wildcard
-            :deviceType => deviceType,
-            :transmissionType => 1,
-            :messagePeriod => rsMesgPeriod,
-            :radioFrequency => rsFreq,          // ANT RS Frequency
-            :searchTimeoutLowPriority => 10,    // Timeout in 25s
-            :searchThreshold => 0} );           // Pair to all transmitting sensors
-        GenericChannel.setDeviceConfig(deviceCfg);
-    }
-    
-    function open() {
-        // Open the channel
-        GenericChannel.open();
+		isChannelOpen = GenericChannel.open();
         searching = 1;
+        idleTime = 0;
     }
     
-    function closeSensor() {
-        GenericChannel.close();
+    function closeChannel() {
+		if (isChannelOpen) {
+			GenericChannel.release();
+			isChannelOpen = false;
+		}	    
     }
     
     function onMessage(msg) {
@@ -91,19 +95,9 @@ class RunScribeSensor extends Ant.GenericChannel {
             if (searching == 1) {
                 searching = 0;
             }
-            if (execute) {
-                var page = (payload[0].toNumber() & 0xFF);
-                /*
-	    		if (0x00 == page) {
-			        footstrike_type = payload[1] & 0x0F + 1;
-			        contact_time = ((payload[7] & 0x30) << 4) + payload[5];
-			        flight_ratio = ((((payload[7] & 0xC0) << 2) + payload[6]) - 224.0) / 8.0;
-	            } else if (0x01 == page) {
-			        impact_gs = payload[1] / 16.0;
-			        braking_gs = payload[2] / 16.0;
-			        power = ((payload[7] & 0x03) << 8) + payload[3];
-			        pronation_excursion_fs_mp = ((((payload[7] & 0x0C) << 6) + payload[4]) - 512.0) / 10.0;
-	            } else*/ if (page > 0x0F) {
+            if (idleTime >= 0) {
+                var page = (payload[0] & 0xFF);
+				if (page > 0x0F) {
 			        footstrike_type = payload[0] & 0x0F + 1;
 			        impact_gs = payload[1] / 16.0;
 			        braking_gs = payload[2] / 16.0;
@@ -111,15 +105,16 @@ class RunScribeSensor extends Ant.GenericChannel {
 			        flight_ratio = ((((payload[7] & 0x0C) << 6) + payload[4])- 224.0) / 8.0;
 			        power = ((payload[7] & 0x30) << 4) + payload[5];
 			        pronation_excursion_fs_mp = ((((payload[7] & 0xC0) << 2) + payload[6]) - 512.0) / 10.0;
-                    execute = 0;
+                    idleTime = -1;
 	            }
 	        }
         } else if (Ant.MSG_ID_CHANNEL_RESPONSE_EVENT == msg.messageId) {
             if (Ant.MSG_ID_RF_EVENT == (payload[0] & 0xFF)) {
                 if (Ant.MSG_CODE_EVENT_CHANNEL_CLOSED == (payload[1] & 0xFF)) {
-                    // Channel closed, re-open
-                    open();
-                }
+                    closeChannel();
+                } else if (Ant.MSG_CODE_EVENT_RX_SEARCH_TIMEOUT == (payload[1] & 0xFF)) {
+					closeChannel();
+				}                
             }
         }
     }

@@ -54,18 +54,14 @@
         </settingConfig>
     </setting>
 
-    <!-- 
-    <setting propertyKey="@Properties.lFreq" title="@Strings.left_frequency_label">
-        <settingConfig type="numeric" min="2" max="80" />
-    </setting>      
-    <setting propertyKey="@Properties.rFreq" title="@Strings.right_frequency_label">
-        <settingConfig type="numeric" min="2" max="80" />
-    </setting>
-    <setting propertyKey="@Properties.period" title="@Strings.period">
-        <settingConfig type="numeric" min="2048" max="32768" />
-    </setting>
-     -->  
     <setting propertyKey="@Properties.lrmetrics" title="@Strings.lrmetrics">
         <settingConfig type="boolean"/>
+    </setting>    
+    <setting propertyKey="@Properties.antRate" title="@Strings.antRate">
+        <settingConfig type="list">
+            <listEntry value="0">@Strings.Hz4</listEntry>
+            <listEntry value="1">@Strings.Hz8</listEntry>
+            <listEntry value="2">@Strings.Hz16</listEntry>
+        </settingConfig>
     </setting>    
 </settings>

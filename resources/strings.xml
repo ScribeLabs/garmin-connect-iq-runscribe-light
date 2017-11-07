@@ -6,13 +6,14 @@
     <string id="second_metric_label">Second metric</string>
     <string id="third_metric_label">Third metric</string>
     <string id="fourth_metric_label">Fourth metric</string>
+     
+    <string id="lrmetrics">L/R Recording</string>
     
-    <!-- 
-    <string id="left_frequency_label">Left frequency</string>
-    <string id="right_frequency_label">Right frequency</string>
-    <string id="period">Period</string>
-    -->
-    <string id="lrmetrics">L/R recording</string>
+    <string id="antRate">ANT Message Rate</string>
+    
+    <string id="Hz4">4Hz</string>
+    <string id="Hz8">8Hz</string>
+    <string id="Hz16">16Hz</string>
     
     <string id="none">None</string>
 
@@ -43,14 +44,14 @@
     <string id="impact_gs_app_label">Impact Gs (G)</string>
     <string id="braking_gs_app_label">Braking Gs (G)</string>
     <string id="fs_type_app_label">FootStrike</string>
-    <string id="pronation_app_label">Pronation (D)</string>
+    <string id="pronation_app_label">Pronation (°)</string>
     <string id="flight_ratio_app_label">Flight (%)</string>
     <string id="contact_time_app_label">GCT (ms)</string>
     <string id="power_app_label">RunScribe Power (W)</string>
 
     <!-- Metrics Units -->
     <string id="impact_braking_gs_units">G</string>
-    <string id="pronation_units">D</string>
+    <string id="pronation_units">°</string>
     <string id="flight_ratio_units">%</string>
     <string id="contact_time_units">ms</string>
     <string id="power_units">W</string>

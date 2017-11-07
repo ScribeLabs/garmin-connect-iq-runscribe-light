@@ -43,8 +43,9 @@ class RunScribeDataFieldApp extends App.AppBase {
         if (lrRecording) {
             recordedChannelCount = 2;
         }
+        var antRate = getProperty("antRate");
 
-        mDataField = new RunScribeDataField(mScreenShape, mScreenHeight, recordedChannelCount);
+        mDataField = new RunScribeDataField(mScreenShape, mScreenHeight, recordedChannelCount, antRate);
         
         return [mDataField];
     }

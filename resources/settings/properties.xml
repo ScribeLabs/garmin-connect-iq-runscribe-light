@@ -1,14 +1,10 @@
 <properties>
-    <property id="appVersion" type="string">1.13</property>
+    <property id="appVersion" type="string">1.24</property>
     <property id="typeMetric1" type="number">3</property>
     <property id="typeMetric2" type="number">1</property>
     <property id="typeMetric3" type="number">2</property>
     <property id="typeMetric4" type="number">6</property>
     
-    <!--
-    <property id="lFreq" type="number">38</property>
-    <property id="rFreq" type="number">42</property>
-    <property id="period" type="number">2048</property>
-    -->
     <property id="lrmetrics" type="boolean">false</property>
+    <property id="antRate" type="number">0</property>
 </properties>

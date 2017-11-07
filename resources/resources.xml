@@ -1,66 +1,183 @@
 <resources>
     <fitContributions>
+    
+        <!-- LEFT -->
+        
         <fitField id="0"
             displayInChart="true"
             sortOrder="0"
+            precision="1"
+            chartTitle="@Strings.braking_gs_label_left"
+            dataLabel="@Strings.braking_gs_label_left"
+            unitLabel="@Strings.impact_braking_gs_units"
+            fillColor="#FF0000" />
+        
+        <fitField id="1"
+            displayInChart="true"
+            sortOrder = "2"
+            precision="1"
+            chartTitle="@Strings.impact_gs_label_left"
+            dataLabel="@Strings.impact_gs_label_left"
+            unitLabel="@Strings.impact_braking_gs_units"
+            fillColor="#00FF00" />
+        
+        <fitField id="2"
+            displayInChart="true"
+            sortOrder = "4"
+            precision="0"
+            chartTitle="@Strings.fs_type_label_left"
+            dataLabel="@Strings.fs_type_label_left"
+            unitLabel="@Strings.fs_type_units"
+            fillColor="#0000FF" />
+        
+        <fitField id="3"
+            displayInChart="true"
+            sortOrder = "6"
+            precision="1"
+            chartTitle="@Strings.pronation_label_left"
+            dataLabel="@Strings.pronation_label_left"
+            unitLabel="@Strings.pronation_units"
+            fillColor="#FF00FF" />
+        
+        <fitField id="4"
+            displayInChart="true"
+            sortOrder = "8"
+            precision="1"
+            chartTitle="@Strings.flight_ratio_label_left"
+            dataLabel="@Strings.flight_ratio_label_left"
+            unitLabel="@Strings.flight_ratio_units"
+            fillColor="#CC00CC" />
+
+        <fitField id="5"
+            displayInChart="true"
+            sortOrder = "10"
+            precision="0"
+            chartTitle="@Strings.contact_time_label_left"
+            dataLabel="@Strings.contact_time_label_left"
+            unitLabel="@Strings.contact_time_units"
+            fillColor="#FFFF00" />
+
+        <!-- RIGHT -->
+           
+        <fitField id="6"
+            displayInChart="true"
+            sortOrder="1"
+            precision="1"
+            chartTitle="@Strings.braking_gs_label_right"
+            dataLabel="@Strings.braking_gs_label_right"
+            unitLabel="@Strings.impact_braking_gs_units"
+            fillColor="#FF0000" />
+        
+        <fitField id="7"
+            displayInChart="true"
+            sortOrder = "3"
+            precision="1"
+            chartTitle="@Strings.impact_gs_label_right"
+            dataLabel="@Strings.impact_gs_label_right"
+            unitLabel="@Strings.impact_braking_gs_units"
+            fillColor="#00FF00" />
+        
+        <fitField id="8"
+            displayInChart="true"
+            sortOrder = "5"
+            precision="0"
+            chartTitle="@Strings.fs_type_label_right"
+            dataLabel="@Strings.fs_type_label_right"
+            unitLabel="@Strings.fs_type_units"
+            fillColor="#0000FF" />
+        
+        <fitField id="9"
+            displayInChart="true"
+            sortOrder = "7"
+            precision="1"
+            chartTitle="@Strings.pronation_label_right"
+            dataLabel="@Strings.pronation_label_right"
+            unitLabel="@Strings.pronation_units"
+            fillColor="#FF00FF" />
+        
+        <fitField id="10"
+            displayInChart="true"
+            sortOrder = "9"
+            precision="1"
+            chartTitle="@Strings.flight_ratio_label_right"
+            dataLabel="@Strings.flight_ratio_label_right"
+            unitLabel="@Strings.flight_ratio_units"
+            fillColor="#CC00CC" />
+
+        <fitField id="11"
+            displayInChart="true"
+            sortOrder = "11"
+            precision="0"
+            chartTitle="@Strings.contact_time_label_right"
+            dataLabel="@Strings.contact_time_label_right"
+            unitLabel="@Strings.contact_time_units"
+            fillColor="#FFFF00" />            
+            
+        <!-- AVERAGE -->    
+          
+        <fitField id="12"
+            displayInChart="true"
+            sortOrder="12"
             precision="1"
             chartTitle="@Strings.braking_gs_label"
             dataLabel="@Strings.braking_gs_label"
             unitLabel="@Strings.impact_braking_gs_units"
             fillColor="#FF0000" />
         
-        <fitField id="1"
+        <fitField id="13"
             displayInChart="true"
-            sortOrder = "1"
+            sortOrder = "13"
             precision="1"
             chartTitle="@Strings.impact_gs_label"
             dataLabel="@Strings.impact_gs_label"
             unitLabel="@Strings.impact_braking_gs_units"
             fillColor="#00FF00" />
         
-        <fitField id="2"
+        <fitField id="14"
             displayInChart="true"
-            sortOrder = "2"
+            sortOrder = "14"
             precision="0"
             chartTitle="@Strings.fs_type_label"
             dataLabel="@Strings.fs_type_label"
             unitLabel="@Strings.fs_type_units"
             fillColor="#0000FF" />
         
-        <fitField id="3"
+        <fitField id="15"
             displayInChart="true"
-            sortOrder = "3"
+            sortOrder = "15"
             precision="1"
             chartTitle="@Strings.pronation_label"
             dataLabel="@Strings.pronation_label"
             unitLabel="@Strings.pronation_units"
             fillColor="#FF00FF" />
         
-        <fitField id="4"
+        <fitField id="16"
             displayInChart="true"
-            sortOrder = "4"
+            sortOrder = "16"
             precision="1"
             chartTitle="@Strings.flight_ratio_label"
             dataLabel="@Strings.flight_ratio_label"
             unitLabel="@Strings.flight_ratio_units"
             fillColor="#CC00CC" />
 
-        <fitField id="5"
+        <fitField id="17"
             displayInChart="true"
-            sortOrder = "5"
+            sortOrder = "17"
             precision="0"
             chartTitle="@Strings.contact_time_label"
             dataLabel="@Strings.contact_time_label"
             unitLabel="@Strings.contact_time_units"
-            fillColor="#FFFF00" />
-
-        <fitField id="6"
+            fillColor="#FFFF00" />   
+            
+        <fitField id="18"
             displayInChart="true"
-            sortOrder = "6"
+            sortOrder = "18"
             precision="0"
             chartTitle="@Strings.power_label"
             dataLabel="@Strings.power_label"
             unitLabel="@Strings.power_units"
             fillColor="#FF9900" />
+            
+            
     </fitContributions>
 </resources>

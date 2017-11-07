@@ -28,38 +28,34 @@ class RunScribeDataFieldApp extends App.AppBase {
     
     var mDataField;
     var mScreenShape;
+    var mScreenHeight;
     
     function initialize() {
         AppBase.initialize();
-        mScreenShape = System.getDeviceSettings().screenShape;
-    }
-    
-    function onStart(state) {
+        var settings = System.getDeviceSettings();
+        mScreenShape = settings.screenShape;
+        mScreenHeight = settings.screenHeight;
     }
     
     function getInitialView() {
-        var sensorLeft;
-        var sensorRight;
-        
-        try {
-            sensorLeft = new RunScribeSensor(11, 38, 2048);
-            sensorLeft.open();
-            sensorRight = new RunScribeSensor(12, 42, 2048);
-            sensorRight.open();
-        } catch(e instanceof Ant.UnableToAcquireChannelException) {
-            sensorLeft = null;
-            sensorRight = null;
+        var lrRecording = getProperty("lrmetrics");
+        var recordedChannelCount = 1;
+        if (lrRecording) {
+            recordedChannelCount = 2;
         }
-        
-        mDataField = new RunScribeDataField(sensorLeft, sensorRight, mScreenShape);
+        var antRate = getProperty("antRate");
+
+        mDataField = new RunScribeDataField(mScreenShape, mScreenHeight, recordedChannelCount, antRate);
         
         return [mDataField];
     }
     
     function onStop(state) {
         if (mDataField.mSensorLeft != null) {
-            mDataField.mSensorLeft.closeSensor();
-            mDataField.mSensorRight.closeSensor();
+            mDataField.mSensorLeft.closeChannel();
+         }
+        if (mDataField.mSensorRight != null) {
+            mDataField.mSensorRight.closeChannel();
         }
         return false;
     }

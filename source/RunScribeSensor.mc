@@ -25,9 +25,9 @@
 using Toybox.Ant as Ant;
 
 class RunScribeSensor extends Ant.GenericChannel {
-    var data;
-    var searching;
-    
+
+    var searching = 1;
+
     //  Page 0 - Efficiency
     //  FS                      Encoded         1       FS Type         8 bits  [b7/b6 = FS Num % 4, b5=L/R, b4=H/L, b3-b0=FS Type]
     //  Stride Rate             0 to 255        1       steps/min       8 bits
@@ -45,62 +45,45 @@ class RunScribeSensor extends Ant.GenericChannel {
     //  Stance Excursion MP-TO    0 to 127.875      1/8     deg         10 bits
     //  Max Pronation Velocity    0 to 2046         2       deg/sec     10 bits
     //                                                                  56 bits
+
+    var contact_time = 0;
+    var flight_ratio = 0.0;
+    var footstrike_type = 0;
+    var impact_gs = 0.0;
+    var braking_gs = 0.0;
+    var power = 0;
+    var pronation_excursion_fs_mp = 0.0;
+
+    // Ant channel & states
+	var isChannelOpen;
+    var idleTime;
     
-    class RunScribeDataPage {
-        
-        var contact_time = 0.0;
-        var flight_ratio = 0.0;
-        var footstrike_type = 0.0;
-        var impact_gs = 0.0;
-        var braking_gs = 0.0;
-        var power = 0.0;
-        var pronation_excursion_fs_mp = 0.0;
-        
-        function parse_page_0(payload) {
-            footstrike_type = (payload[1] & 0x0F) + 1;
-            contact_time = ((payload[7] & 0x30) << 4) + payload[5];
-            flight_ratio = decode_bits( (((payload[7] & 0xC0) << 2) + payload[6]), -28.0, 8.0 );
-        }
-        
-        function parse_page_1(payload) {
-            impact_gs = payload[1] / 16.0;
-            braking_gs = payload[2] / 16.0;
-            power = ((payload[7] & 0x03) << 8) + payload[3];
-            pronation_excursion_fs_mp = decode_bits( (((payload[7] & 0x0C) << 6) + payload[4]), -51.2, 10.0 );
-        }
-        
-        hidden function decode_bits(x, min_val, scale_factor)	{ 
-            return ((x + min_val*scale_factor) / scale_factor);
-        }
-        
-    }
     
-    function initialize(deviceType, rsFreq, rsMesgPeriod) {
-        
+    function initialize(rsDeviceType, rsFreq, rsMesgPeriod) {
         // Get the channel
-        var chanAssign = new Ant.ChannelAssignment(Ant.CHANNEL_TYPE_RX_NOT_TX, Ant.NETWORK_PUBLIC);
-        GenericChannel.initialize(method(:onMessage), chanAssign);
+        GenericChannel.initialize(method(:onMessage), new Ant.ChannelAssignment(Ant.CHANNEL_TYPE_RX_NOT_TX, Ant.NETWORK_PUBLIC));
+
+        GenericChannel.setDeviceConfig(new Ant.DeviceConfig( {
+            	:deviceNumber => 0,               // Wildcard our search - Not setting enables wildcard
+            	:deviceType => rsDeviceType,
+            	:transmissionType => 1,
+            	:messagePeriod => rsMesgPeriod,
+            	:radioFrequency => rsFreq,          // ANT RS Frequency
+            	:searchTimeoutLowPriority => 10,    // Timeout in 2.5s (25sec)
+            	:searchTimeoutHighPriority => 2,    // Timeout in 2.5s (5sec)
+            	:searchThreshold => 0} )            // Farthest        
+        );
         
-        // Set the configuration
-        var deviceCfg = new Ant.DeviceConfig( {
-            :deviceNumber => 0,                 //Wildcard our search
-            :deviceType => deviceType,
-            :transmissionType => 1,
-            :messagePeriod => rsMesgPeriod,
-            :radioFrequency => rsFreq,          //ANT RS Frequency
-            :searchTimeoutLowPriority => 10,    //Timeout in 25s
-            :searchThreshold => 0} );           //Pair to all transmitting sensors
-        GenericChannel.setDeviceConfig(deviceCfg);
-    }
-    
-    function open() {
-        // Open the channel
-        GenericChannel.open();
+		isChannelOpen = GenericChannel.open();
         searching = 1;
+        idleTime = 0;
     }
     
-    function closeSensor() {
-        GenericChannel.close();
+    function closeChannel() {
+		if (isChannelOpen) {
+			GenericChannel.release();
+			isChannelOpen = false;
+		}	    
     }
     
     function onMessage(msg) {
@@ -111,23 +94,29 @@ class RunScribeSensor extends Ant.GenericChannel {
             // Were we searching?
             if (searching == 1) {
                 searching = 0;
-                if (data == null) {
-                    data = new RunScribeDataPage();
-                }
             }
-            
-            if (0x00 == (payload[0].toNumber() & 0xFF) ) {
-                data.parse_page_0(payload);
-            } else if (0x01 == (payload[0].toNumber() & 0xFF)) {
-                data.parse_page_1(payload);
-            }
+            if (idleTime >= 0) {
+                var page = (payload[0] & 0xFF);
+				if (page > 0x0F) {
+			        footstrike_type = payload[0] & 0x0F + 1;
+			        impact_gs = payload[1] / 16.0;
+			        braking_gs = payload[2] / 16.0;
+			        contact_time = ((payload[7] & 0x03) << 8) + payload[3];
+			        flight_ratio = ((((payload[7] & 0x0C) << 6) + payload[4])- 224.0) / 8.0;
+			        power = ((payload[7] & 0x30) << 4) + payload[5];
+			        pronation_excursion_fs_mp = ((((payload[7] & 0xC0) << 2) + payload[6]) - 512.0) / 10.0;
+                    idleTime = -1;
+	            }
+	        }
         } else if (Ant.MSG_ID_CHANNEL_RESPONSE_EVENT == msg.messageId) {
             if (Ant.MSG_ID_RF_EVENT == (payload[0] & 0xFF)) {
                 if (Ant.MSG_CODE_EVENT_CHANNEL_CLOSED == (payload[1] & 0xFF)) {
-                    // Channel closed, re-open
-                    open();
-                }
+                    closeChannel();
+                } else if (Ant.MSG_CODE_EVENT_RX_SEARCH_TIMEOUT == (payload[1] & 0xFF)) {
+					closeChannel();
+				}                
             }
         }
     }
+    
 }

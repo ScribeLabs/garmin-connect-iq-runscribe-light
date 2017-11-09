@@ -1,10 +1,10 @@
 <properties>
-    <property id="appVersion" type="string">1.24</property>
-    <property id="typeMetric1" type="number">3</property>
-    <property id="typeMetric2" type="number">1</property>
-    <property id="typeMetric3" type="number">2</property>
-    <property id="typeMetric4" type="number">6</property>
+    <property id="appVersion" type="string">1.27</property>
+    <property id="tM1" type="number">6</property>
+    <property id="tM2" type="number">1</property>
+    <property id="tM3" type="number">2</property>
+    <property id="tM4" type="number">3</property>
     
     <property id="lrmetrics" type="boolean">false</property>
-    <property id="antRate" type="number">0</property>
+    <property id="antRate" type="number">1</property>
 </properties>

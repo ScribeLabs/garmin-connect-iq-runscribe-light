@@ -3,56 +3,57 @@
         	<settingConfig type="alphaNumeric" readonly="true" />
     	</setting>
     
-    <setting propertyKey="@Properties.typeMetric1" title="@Strings.first_metric_label">
+    <setting propertyKey="@Properties.tM1" title="@Strings.first_metric_label">
         <settingConfig type="list">
-            <listEntry value="1">@Strings.impact_gs_app_label</listEntry>
-            <listEntry value="2">@Strings.braking_gs_app_label</listEntry>
-            <listEntry value="3">@Strings.fs_type_app_label</listEntry>
-            <listEntry value="4">@Strings.pronation_app_label</listEntry>
-            <listEntry value="5">@Strings.flight_ratio_app_label</listEntry>
-            <listEntry value="6">@Strings.contact_time_app_label</listEntry>
-            <listEntry value="7">@Strings.power_app_label</listEntry>
+            <listEntry value="1">@Strings.impact_gs_label</listEntry>
+            <listEntry value="2">@Strings.braking_gs_label</listEntry>
+            <listEntry value="3">@Strings.fs_type_label</listEntry>
+            <listEntry value="4">@Strings.pronation_label</listEntry>
+            <listEntry value="5">@Strings.flight_ratio_label</listEntry>
+            <listEntry value="6">@Strings.contact_time_label</listEntry>
+            <listEntry value="7">@Strings.power_label</listEntry>
         </settingConfig>
     </setting>
     
-    <setting propertyKey="@Properties.typeMetric2" title="@Strings.second_metric_label">
+    <setting propertyKey="@Properties.tM2" title="@Strings.second_metric_label">
         <settingConfig type="list">
             <listEntry value="0">@Strings.none</listEntry>
-            <listEntry value="1">@Strings.impact_gs_app_label</listEntry>
-            <listEntry value="2">@Strings.braking_gs_app_label</listEntry>
-            <listEntry value="3">@Strings.fs_type_app_label</listEntry>
-            <listEntry value="4">@Strings.pronation_app_label</listEntry>
-            <listEntry value="5">@Strings.flight_ratio_app_label</listEntry>
-            <listEntry value="6">@Strings.contact_time_app_label</listEntry>
-            <listEntry value="7">@Strings.power_app_label</listEntry>
+            <listEntry value="1">@Strings.impact_gs_label</listEntry>
+            <listEntry value="2">@Strings.braking_gs_label</listEntry>
+            <listEntry value="3">@Strings.fs_type_label</listEntry>
+            <listEntry value="4">@Strings.pronation_label</listEntry>
+            <listEntry value="5">@Strings.flight_ratio_label</listEntry>
+            <listEntry value="6">@Strings.contact_time_label</listEntry>
+            <listEntry value="7">@Strings.power_label</listEntry>
         </settingConfig>
     </setting>
     
-    <setting propertyKey="@Properties.typeMetric3" title="@Strings.third_metric_label">
+    <setting propertyKey="@Properties.tM3" title="@Strings.third_metric_label">
         <settingConfig type="list">
             <listEntry value="0">@Strings.none</listEntry>
-            <listEntry value="1">@Strings.impact_gs_app_label</listEntry>
-            <listEntry value="2">@Strings.braking_gs_app_label</listEntry>
-            <listEntry value="3">@Strings.fs_type_app_label</listEntry>
-            <listEntry value="4">@Strings.pronation_app_label</listEntry>
-            <listEntry value="5">@Strings.flight_ratio_app_label</listEntry>
-            <listEntry value="6">@Strings.contact_time_app_label</listEntry>
-            <listEntry value="7">@Strings.power_app_label</listEntry>
+            <listEntry value="1">@Strings.impact_gs_label</listEntry>
+            <listEntry value="2">@Strings.braking_gs_label</listEntry>
+            <listEntry value="3">@Strings.fs_type_label</listEntry>
+            <listEntry value="4">@Strings.pronation_label</listEntry>
+            <listEntry value="5">@Strings.flight_ratio_label</listEntry>
+            <listEntry value="6">@Strings.contact_time_label</listEntry>
+            <listEntry value="7">@Strings.power_label</listEntry>
         </settingConfig>
     </setting>
     
-    <setting propertyKey="@Properties.typeMetric4" title="@Strings.fourth_metric_label">
+    <setting propertyKey="@Properties.tM4" title="@Strings.fourth_metric_label">
         <settingConfig type="list">
             <listEntry value="0">@Strings.none</listEntry>
-            <listEntry value="1">@Strings.impact_gs_app_label</listEntry>
-            <listEntry value="2">@Strings.braking_gs_app_label</listEntry>
-            <listEntry value="3">@Strings.fs_type_app_label</listEntry>
-            <listEntry value="4">@Strings.pronation_app_label</listEntry>
-            <listEntry value="5">@Strings.flight_ratio_app_label</listEntry>
-            <listEntry value="6">@Strings.contact_time_app_label</listEntry>
-            <listEntry value="7">@Strings.power_app_label</listEntry>
+            <listEntry value="1">@Strings.impact_gs_label</listEntry>
+            <listEntry value="2">@Strings.braking_gs_label</listEntry>
+            <listEntry value="3">@Strings.fs_type_label</listEntry>
+            <listEntry value="4">@Strings.pronation_label</listEntry>
+            <listEntry value="5">@Strings.flight_ratio_label</listEntry>
+            <listEntry value="6">@Strings.contact_time_label</listEntry>
+            <listEntry value="7">@Strings.power_label</listEntry>
         </settingConfig>
     </setting>
+
 
     <setting propertyKey="@Properties.lrmetrics" title="@Strings.lrmetrics">
         <settingConfig type="boolean"/>

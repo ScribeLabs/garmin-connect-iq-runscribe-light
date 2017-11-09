@@ -76,73 +76,77 @@ class RunScribeDataField extends Ui.DataField {
     
     hidden var mMesgPeriod;
     
+    
+    
     // Constructor
-    function initialize(screenShape, screenHeight, storedChannelCount, antRate) {
+    function initialize(screenShape, screenHeight, storedChannelCount) {
         DataField.initialize();
         
         mScreenShape = screenShape;
         mScreenHeight = screenHeight;
         
-        onSettingsChanged();
-        
+        onSettingsChanged();        
+
         var d = {};
         var units = "units";
 
         var offset = 0;
+        var extensionRight = "_R";
+        var extensionLeft = "_L";
 
         if (storedChannelCount == 2) {
-            mCurrentFSFieldRight = createField("", 8, Fit.DATA_TYPE_SINT8, d);
+            mCurrentFSFieldRight = createField("FS" + extensionRight, 8, Fit.DATA_TYPE_SINT8, d);
         } else {
             offset = 12;
-        }    
-        
-        mMesgPeriod = 8192 >> antRate;
+            extensionLeft = "";
+        }            
 
-        mCurrentFSFieldLeft = createField("", 2 + offset, Fit.DATA_TYPE_SINT8, d);
+        mCurrentFSFieldLeft = createField("FS" + extensionLeft, 2 + offset, Fit.DATA_TYPE_SINT8, d);
 
-        d[units] = "G";
-        
+        d[units] = "G";       
         if (storedChannelCount == 2) {         
-            mCurrentBGFieldRight = createField("", 6, Fit.DATA_TYPE_FLOAT, d);
-            mCurrentIGFieldRight = createField("", 7, Fit.DATA_TYPE_FLOAT, d);
-        }    
-
-        mCurrentBGFieldLeft = createField("", 0 + offset, Fit.DATA_TYPE_FLOAT, d);
-        mCurrentIGFieldLeft = createField("", 1 + offset, Fit.DATA_TYPE_FLOAT, d);
-        
-        d[units] = "D";
-        
-        if (storedChannelCount == 2) {         
-            mCurrentPronationFieldRight = createField("", 9, Fit.DATA_TYPE_SINT16, d);
+            mCurrentBGFieldRight = createField("BG" + extensionRight, 6, Fit.DATA_TYPE_FLOAT, d);
+            mCurrentIGFieldRight = createField("IG" + extensionRight, 7, Fit.DATA_TYPE_FLOAT, d);
         }
         
-        mCurrentPronationFieldLeft = createField("", 3 + offset, Fit.DATA_TYPE_SINT16, d);
+        mCurrentBGFieldLeft = createField("BG" + extensionLeft, 0 + offset, Fit.DATA_TYPE_FLOAT, d);
+        mCurrentIGFieldLeft = createField("IG" + extensionLeft, 1 + offset, Fit.DATA_TYPE_FLOAT, d);
+        
+        d[units] = "D";        
+        if (storedChannelCount == 2) {         
+            mCurrentPronationFieldRight = createField("P" + extensionRight, 9, Fit.DATA_TYPE_SINT16, d);
+        }
+        
+        mCurrentPronationFieldLeft = createField("P" + extensionLeft, 3 + offset, Fit.DATA_TYPE_SINT16, d);
         
         d[units] = "%";
         if (storedChannelCount == 2) {
-            mCurrentFlightFieldRight = createField("", 10, Fit.DATA_TYPE_SINT8, d);
+            mCurrentFlightFieldRight = createField("FR" + extensionRight, 10, Fit.DATA_TYPE_SINT8, d);
         }
-
-        mCurrentFlightFieldLeft = createField("", 4 + offset, Fit.DATA_TYPE_SINT8, d);
+        
+        mCurrentFlightFieldLeft = createField("FR" + extensionLeft, 4 + offset, Fit.DATA_TYPE_SINT8, d);
        
         d[units] = "ms";
         if (storedChannelCount == 2) {
-            mCurrentGCTFieldRight = createField("", 11, Fit.DATA_TYPE_SINT16, d);
-        } 
-
-        mCurrentGCTFieldLeft = createField("", 5 + offset, Fit.DATA_TYPE_SINT16, d);
+            mCurrentGCTFieldRight = createField("GCT" + extensionRight, 11, Fit.DATA_TYPE_SINT16, d);
+        }
+        
+        mCurrentGCTFieldLeft = createField("GCT" + extensionLeft, 5 + offset, Fit.DATA_TYPE_SINT16, d);
         
         d[units] = "W";
-        mCurrentPowerField = createField("", 18, Fit.DATA_TYPE_SINT16, d);
+        mCurrentPowerField = createField("Power", 18, Fit.DATA_TYPE_SINT16, d);
     }
     
     function onSettingsChanged() {
-        var app = App.getApp();    
-        var name = "typeMetric";
-        mMetric1Type = app.getProperty(name + "1");
-        mMetric2Type = app.getProperty(name + "2");
-        mMetric3Type = app.getProperty(name + "3");
-        mMetric4Type = app.getProperty(name + "4");
+        var app = App.getApp();
+        
+        var antRate = app.getProperty("antRate");
+        mMesgPeriod = 8192 >> antRate;        
+        
+        mMetric1Type = app.getProperty("tM1");
+        mMetric2Type = app.getProperty("tM2");
+        mMetric3Type = app.getProperty("tM3");
+        mMetric4Type = app.getProperty("tM4");
 
         // Remove empty metrics from between
         if (mMetric2Type == 0) {
@@ -174,16 +178,19 @@ class RunScribeDataField extends Ui.DataField {
     function compute(info) {
     
         if (mSensorLeft == null || !mSensorLeft.isChannelOpen) {
-            mSensorLeft = null;
-            try {
-                mSensorLeft = new RunScribeSensor(11, 62, mMesgPeriod);
-            } catch(e) {
+            if (mSensorLeft != null) {
                 mSensorLeft = null;
-            }
+            } else {
+	            try {
+	                mSensorLeft = new RunScribeSensor(11, 62, mMesgPeriod);
+	            } catch(e) {
+	                mSensorLeft = null;
+	            }
+	       }
         } else {
 
             ++mSensorLeft.idleTime;
-            if (mSensorLeft.idleTime > 20) {
+            if (mSensorLeft.idleTime > 10) {
                     mSensorLeft.closeChannel();
             }
         
@@ -218,16 +225,19 @@ class RunScribeDataField extends Ui.DataField {
         }
         
         if (mSensorRight == null || !mSensorRight.isChannelOpen) {
-            mSensorRight = null;
-            try {
-                mSensorRight = new RunScribeSensor(12, 64, mMesgPeriod);
-            } catch(e) {
+            if (mSensorRight != null) {
                 mSensorRight = null;
+            } else {
+	            try {
+	                mSensorRight = new RunScribeSensor(12, 64, mMesgPeriod);
+	            } catch(e) {
+	                mSensorRight = null;
+	            }
             }
         } else {
 
             ++mSensorRight.idleTime;
-            if (mSensorRight.idleTime > 20) {
+            if (mSensorRight.idleTime > 7) {
                 mSensorRight.closeChannel();
             }
             
@@ -439,7 +449,7 @@ class RunScribeDataField extends Ui.DataField {
                 } 
             }
         } else {
-            var message = "Searching(1.24)...";
+            var message = "Searching(1.27)...";
             if (mSensorLeft == null || mSensorRight == null) {
                 message = "No Channel!";
             }

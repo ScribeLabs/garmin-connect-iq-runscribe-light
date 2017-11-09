@@ -69,8 +69,8 @@ class RunScribeSensor extends Ant.GenericChannel {
             	:transmissionType => 1,
             	:messagePeriod => rsMesgPeriod,
             	:radioFrequency => rsFreq,          // ANT RS Frequency
-            	:searchTimeoutLowPriority => 10,    // Timeout in 2.5s (25sec)
-            	:searchTimeoutHighPriority => 2,    // Timeout in 2.5s (5sec)
+            	:searchTimeoutLowPriority => 2,    // Timeout in 2.5s (25sec)
+            	:searchTimeoutHighPriority => 0,    // Timeout in 2.5s (5sec)
             	:searchThreshold => 0} )            // Farthest        
         );
         
@@ -83,6 +83,7 @@ class RunScribeSensor extends Ant.GenericChannel {
 		if (isChannelOpen) {
 			GenericChannel.release();
 			isChannelOpen = false;
+			searching = 1;
 		}	    
     }
     

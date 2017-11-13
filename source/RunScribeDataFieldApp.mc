@@ -50,12 +50,9 @@ class RunScribeDataFieldApp extends App.AppBase {
     }
     
     function onStop(state) {
-        if (mDataField.mSensorLeft != null) {
-            mDataField.mSensorLeft.closeChannel();
+        if (mDataField.mSensor != null) {
+            mDataField.mSensor.closeChannel();
          }
-        if (mDataField.mSensorRight != null) {
-            mDataField.mSensorRight.closeChannel();
-        }
         return false;
     }
     

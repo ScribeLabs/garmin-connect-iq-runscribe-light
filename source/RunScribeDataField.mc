@@ -29,9 +29,6 @@ using Toybox.FitContributor as Fit;
 
 class RunScribeDataField extends Ui.DataField {
 
-    const LEFT = 1;
-    const RIGHT = 0;
-    
     hidden var mMetric1Type; // 1 - Impact GS, 2 - Braking GS, 3 - FS Type, 4 - Pronation, 5 - Flight Ratio, 6 - Contact Time
     hidden var mMetric2Type; // 1 - Impact GS, 2 - Braking GS, 3 - FS Type, 4 - Pronation, 5 - Flight Ratio, 6 - Contact Time
     hidden var mMetric3Type; // 0 - None, 1 - Impact GS, 2 - Braking GS, 3 - FS Type, 4 - Pronation, 5 - Flight Ratio, 6 - Contact Time
@@ -196,48 +193,36 @@ class RunScribeDataField extends Ui.DataField {
 
             ++mSensor.idleTime;
             if (mSensor.idleTime > 30) {
-                    mSensor.closeChannel();
-                    mSensor.openChannel();
+                mSensor.closeChannel();
+                mSensor.openChannel();
             }
         
-            var braking = 0;
-            var impact = 0;
-            var footstrike = 0;
-            var pronation = 0;
-            var flight = 0;
-            var contact = 0;
-            
-            power = 0;
+            var braking = mSensor.braking_gs_left;
+            var impact = mSensor.impact_gs_left;
+            var footstrike = mSensor.footstrike_type_left;
+            var pronation = mSensor.pronation_excursion_fs_mp_left;
+            var flight = mSensor.flight_ratio_left;
+            var contact = mSensor.contact_time_left;
+            power = mSensor.power_left;
+
+            var multiplier = 0.5;
 
             // Be Smart about average w/ single-channel recording!
-            if ((mSensor.footstrike_type[LEFT]) != 0 && (mSensor.footstrike_type[RIGHT] == 0)) {
-                // Left Data / No Right Data
-                braking = mSensor.braking_gs[LEFT];
-                impact = mSensor.impact_gs[LEFT];
-                footstrike = mSensor.footstrike_type[LEFT];
-                pronation = mSensor.pronation_excursion_fs_mp[LEFT];
-                flight = mSensor.flight_ratio[LEFT];
-                contact = mSensor.contact_time[RIGHT];
-                power = mSensor.power[LEFT];
-            } else if ((mSensor.footstrike_type[RIGHT]) != 0 && (mSensor.footstrike_type[LEFT] == 0) && (mCurrentBGFieldRight == null)) {
-                // Right Data / No Left Data / Average Recording
-                braking = mSensor.braking_gs[RIGHT];
-                impact = mSensor.impact_gs[RIGHT];
-                footstrike = mSensor.footstrike_type[RIGHT];
-                pronation = mSensor.pronation_excursion_fs_mp[RIGHT];
-                flight = mSensor.flight_ratio[RIGHT];
-                contact = mSensor.contact_time[RIGHT];
-                power = mSensor.power[RIGHT];
-            } else if ((mSensor.footstrike_type[LEFT]) != 0 && (mSensor.footstrike_type[RIGHT] != 0) && (mCurrentBGFieldRight == null)) {
+            if (mSensor.footstrike_type_left == 0 || mSensor.footstrike_type_right == 0) {
+                multiplier = 1.0;
+            } 
+            
+            if (mCurrentBGFieldRight == null) {
                 // Left Data / Right Data / Average Recording
-                braking = (mSensor.braking_gs[LEFT] + mSensor.braking_gs[RIGHT]) * 0.5;
-                impact = (mSensor.impact_gs[LEFT] + mSensor.impact_gs[RIGHT]) * 0.5;
-                footstrike = (mSensor.footstrike_type[LEFT] + mSensor.footstrike_type[RIGHT]) * 0.5;
-                pronation = (mSensor.pronation_excursion_fs_mp[LEFT] + mSensor.pronation_excursion_fs_mp[RIGHT]) * 0.5;
-                flight = (mSensor.flight_ratio[LEFT] + mSensor.flight_ratio[RIGHT]) * 0.5;
-                contact = (mSensor.contact_time[LEFT] + mSensor.contact_time[RIGHT]) * 0.5;
-                power = (mSensor.power[LEFT] + mSensor.power[RIGHT]) * 0.5;
+                braking = (braking + mSensor.braking_gs_right) * multiplier;
+                impact = (impact + mSensor.impact_gs_right) * multiplier;
+                footstrike = (footstrike + mSensor.footstrike_type_right) * multiplier;
+                pronation = (pronation + mSensor.pronation_excursion_fs_mp_right) * multiplier;
+                flight = (flight + mSensor.flight_ratio_right) * multiplier;
+                contact = (contact + mSensor.contact_time_right) * multiplier;
             }     
+
+            power = (power + mSensor.power_right) * multiplier;
 
             mCurrentBGFieldLeft.setData(braking);
             mCurrentIGFieldLeft.setData(impact);
@@ -249,12 +234,12 @@ class RunScribeDataField extends Ui.DataField {
             
             if (mCurrentBGFieldRight != null) {
                 // Separate left / right recording
-                mCurrentBGFieldRight.setData(mSensor.braking_gs[RIGHT]);
-                mCurrentIGFieldRight.setData(mSensor.impact_gs[RIGHT]);
-                mCurrentFSFieldRight.setData(mSensor.footstrike_type[RIGHT]);
-                mCurrentPronationFieldRight.setData(mSensor.pronation_excursion_fs_mp[RIGHT]);
-                mCurrentFlightFieldRight.setData(mSensor.flight_ratio[RIGHT]);
-                mCurrentGCTFieldRight.setData(mSensor.contact_time[RIGHT]);
+                mCurrentBGFieldRight.setData(mSensor.braking_gs_right);
+                mCurrentIGFieldRight.setData(mSensor.impact_gs_right);
+                mCurrentFSFieldRight.setData(mSensor.footstrike_type_right);
+                mCurrentPronationFieldRight.setData(mSensor.pronation_excursion_fs_mp_right);
+                mCurrentFlightFieldRight.setData(mSensor.flight_ratio_right);
+                mCurrentGCTFieldRight.setData(mSensor.contact_time_right);
            }           
         }
         
@@ -341,32 +326,59 @@ class RunScribeDataField extends Ui.DataField {
         
         return null;
     }
-        
+
     hidden function getMetric(metricType, LR) {
-        var floatFormat = "%.1f";
-        if (mSensor != null) {
+        var value = getMetricValue(metricType, LR);
+        if (metricType == 3 || metricType == 6) {
+            return value.format("%d");
+        }
+        
+        return value.format("%.1f"); 
+    }
+
+    hidden function getMetricValue(metricType, isLeft) {
+        if (isLeft == 1) {
             if (metricType == 1) {
-                return mSensor.impact_gs[LR].format(floatFormat);
+                return mSensor.impact_gs_left;
             } 
             if (metricType == 2) {
-                return mSensor.braking_gs[LR].format(floatFormat);
+                return mSensor.braking_gs_left;
             } 
             if (metricType == 3) {
-                return mSensor.footstrike_type[LR].format("%d");
+                return mSensor.footstrike_type_left;
             } 
             if (metricType == 4) {
-                return mSensor.pronation_excursion_fs_mp[LR].format(floatFormat);
+                return mSensor.pronation_excursion_fs_mp_left;
             } 
             if (metricType == 5) {
-                return mSensor.flight_ratio[LR].format(floatFormat);
+                return mSensor.flight_ratio_left;
             } 
             if (metricType == 6) {
-                return mSensor.contact_time[LR].format("%d");
+                return mSensor.contact_time_left;
             }
+        } 
+        
+        if (metricType == 1) {
+            return mSensor.impact_gs_right;
+        } 
+        if (metricType == 2) {
+            return mSensor.braking_gs_right;
+        } 
+        if (metricType == 3) {
+            return mSensor.footstrike_type_right;
+        } 
+        if (metricType == 4) {
+            return mSensor.pronation_excursion_fs_mp_right;
+        } 
+        if (metricType == 5) {
+            return mSensor.flight_ratio_right;
+        } 
+        if (metricType == 6) {
+            return mSensor.contact_time_right;
         }
-        return "0";
-    }
-    
+        
+        return 0.0;
+    }        
     
     // Handle the update event
     function onUpdate(dc) {
@@ -467,8 +479,8 @@ class RunScribeDataField extends Ui.DataField {
 
     hidden function drawMetricOffset(dc, x, y, metricType) {
     
-        var metricLeft = getMetric(metricType, LEFT);
-        var metricRight = getMetric(metricType, RIGHT);
+        var metricLeft = getMetric(metricType, 1);
+        var metricRight = getMetric(metricType, 0);
         
         if (metricType == 7) {
             metricLeft = power.format("%d");

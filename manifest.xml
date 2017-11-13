@@ -31,8 +31,6 @@
             <iq:uses-permission id="Ant"/>
             <iq:uses-permission id="FitContributor"/>
         </iq:permissions>
-        <iq:languages>
-            <iq:language>eng</iq:language>
-        </iq:languages>
+        <iq:languages/>
     </iq:application>
 </iq:manifest>

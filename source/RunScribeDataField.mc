@@ -28,6 +28,9 @@ using Toybox.Graphics as Gfx;
 using Toybox.FitContributor as Fit;
 
 class RunScribeDataField extends Ui.DataField {
+
+	const LEFT = 1;
+	const RIGHT = 0;
     
     hidden var mMetric1Type; // 1 - Impact GS, 2 - Braking GS, 3 - FS Type, 4 - Pronation, 5 - Flight Ratio, 6 - Contact Time
     hidden var mMetric2Type; // 1 - Impact GS, 2 - Braking GS, 3 - FS Type, 4 - Pronation, 5 - Flight Ratio, 6 - Contact Time
@@ -46,8 +49,7 @@ class RunScribeDataField extends Ui.DataField {
     hidden var mDataFont;
     hidden var mDataFontHeight;
     
-    var mSensorLeft;
-    var mSensorRight;
+    var mSensor;
     
     hidden var mScreenShape;
     hidden var mScreenHeight;
@@ -76,7 +78,7 @@ class RunScribeDataField extends Ui.DataField {
     
     hidden var mMesgPeriod;
     
-    
+    var power;
     
     // Constructor
     function initialize(screenShape, screenHeight, storedChannelCount) {
@@ -85,7 +87,10 @@ class RunScribeDataField extends Ui.DataField {
         mScreenShape = screenShape;
         mScreenHeight = screenHeight;
         
-        onSettingsChanged();        
+        onSettingsChanged(); 
+        
+        mSensor = new RunScribeSensor(10, 63, 2048);       
+        //mSensor = new RunScribeSensor(10, 63, mMesgPeriod);       
 
         var d = {};
         var units = "units";
@@ -177,80 +182,82 @@ class RunScribeDataField extends Ui.DataField {
     
     function compute(info) {
     
-        if (mSensorLeft == null || !mSensorLeft.isChannelOpen) {
-            if (mSensorLeft != null) {
-                mSensorLeft = null;
+        if (mSensor == null || !mSensor.isChannelOpen) {
+            if (mSensor != null) {
+                mSensor = null;
             } else {
 	            try {
-	                mSensorLeft = new RunScribeSensor(11, 62, mMesgPeriod);
+	                mSensor = new RunScribeSensor(10, 63, mMesgPeriod);
 	            } catch(e) {
-	                mSensorLeft = null;
+	                mSensor = null;
 	            }
 	       }
         } else {
 
-            ++mSensorLeft.idleTime;
-            if (mSensorLeft.idleTime > 30) {
-                    mSensorLeft.closeChannel();
+            ++mSensor.idleTime;
+            if (mSensor.idleTime > 30) {
+                    mSensor.closeChannel();
+                    mSensor.openChannel();
             }
         
-            var braking = mSensorLeft.braking_gs;
-            var impact = mSensorLeft.impact_gs;
-            var footstrike = mSensorLeft.footstrike_type;
-            var pronation = mSensorLeft.pronation_excursion_fs_mp;
-            var flight = mSensorLeft.flight_ratio;
-            var contact = mSensorLeft.contact_time;
- 
-            // If no right field then taking averages !!
-            if (mCurrentBGFieldRight == null && mSensorRight != null) {
-                // Average left / right recording
-                braking = (braking + mSensorRight.braking_gs) * 0.5;
-                impact = (impact + mSensorRight.impact_gs) * 0.5;
-                footstrike = (footstrike + mSensorRight.footstrike_type) * 0.5;
-                pronation = (pronation + mSensorRight.pronation_excursion_fs_mp) * 0.5;
-                flight = (flight + mSensorRight.flight_ratio) * 0.5;
-                contact = (contact + mSensorRight.contact_time) * 0.5;
-            }
-                            
+            var braking = 0;
+            var impact = 0;
+            var footstrike = 0;
+            var pronation = 0;
+            var flight = 0;
+            var contact = 0;
+            
+            power = 0;
+
+			// Be Smart about average w/ single-channel recording!
+			if ((mSensor.footstrike_type[LEFT]) != 0 && (mSensor.footstrike_type[RIGHT] == 0)) {
+				// Left Data / No Right Data
+	            braking = mSensor.braking_gs[LEFT];
+    	   			impact = mSensor.impact_gs[LEFT];
+            		footstrike = mSensor.footstrike_type[LEFT];
+            		pronation = mSensor.pronation_excursion_fs_mp[LEFT];
+            		flight = mSensor.flight_ratio[LEFT];
+            		contact = mSensor.contact_time[RIGHT];
+            		power = mSensor.power[LEFT];
+            	} else if ((mSensor.footstrike_type[RIGHT]) != 0 && (mSensor.footstrike_type[LEFT] == 0) && (mCurrentBGFieldRight == null)) {
+				// Right Data / No Left Data / Average Recording
+	            braking = mSensor.braking_gs[RIGHT];
+    	   			impact = mSensor.impact_gs[RIGHT];
+            		footstrike = mSensor.footstrike_type[RIGHT];
+            		pronation = mSensor.pronation_excursion_fs_mp[RIGHT];
+            		flight = mSensor.flight_ratio[RIGHT];
+            		contact = mSensor.contact_time[RIGHT];
+            		power = mSensor.power[RIGHT];
+            	} else if ((mSensor.footstrike_type[LEFT]) != 0 && (mSensor.footstrike_type[RIGHT] != 0) && (mCurrentBGFieldRight == null)) {
+				// Left Data / Right Data / Average Recording
+                braking = (mSensor.braking_gs[LEFT] + mSensor.braking_gs[RIGHT]) * 0.5;
+                impact = (mSensor.impact_gs[LEFT] + mSensor.impact_gs[RIGHT]) * 0.5;
+                footstrike = (mSensor.footstrike_type[LEFT] + mSensor.footstrike_type[RIGHT]) * 0.5;
+                pronation = (mSensor.pronation_excursion_fs_mp[LEFT] + mSensor.pronation_excursion_fs_mp[RIGHT]) * 0.5;
+                flight = (mSensor.flight_ratio[LEFT] + mSensor.flight_ratio[RIGHT]) * 0.5;
+                contact = (mSensor.contact_time[LEFT] + mSensor.contact_time[RIGHT]) * 0.5;
+                power = (mSensor.power[LEFT] + mSensor.power[RIGHT]) * 0.5;
+			}	 
+
             mCurrentBGFieldLeft.setData(braking);
             mCurrentIGFieldLeft.setData(impact);
             mCurrentFSFieldLeft.setData(footstrike);
             mCurrentPronationFieldLeft.setData(pronation);
             mCurrentFlightFieldLeft.setData(flight);
-            mCurrentGCTFieldLeft.setData(contact);
-            
-            if (mSensorRight != null) {
-                mCurrentPowerField.setData((mSensorLeft.power + mSensorRight.power) * 0.5);
-            }
-        }
-        
-        if (mSensorRight == null || !mSensorRight.isChannelOpen) {
-            if (mSensorRight != null) {
-                mSensorRight = null;
-            } else {
-	            try {
-	                mSensorRight = new RunScribeSensor(12, 64, mMesgPeriod);
-	            } catch(e) {
-	                mSensorRight = null;
-	            }
-            }
-        } else {
-
-            ++mSensorRight.idleTime;
-            if (mSensorRight.idleTime > 29) {
-                mSensorRight.closeChannel();
-            }
+            mCurrentGCTFieldLeft.setData(contact);            
+            mCurrentPowerField.setData(power);
             
             if (mCurrentBGFieldRight != null) {
                 // Separate left / right recording
-                mCurrentBGFieldRight.setData(mSensorRight.braking_gs);
-                mCurrentIGFieldRight.setData(mSensorRight.impact_gs);
-                mCurrentFSFieldRight.setData(mSensorRight.footstrike_type);
-                mCurrentPronationFieldRight.setData(mSensorRight.pronation_excursion_fs_mp);
-                mCurrentFlightFieldRight.setData(mSensorRight.flight_ratio);
-                mCurrentGCTFieldRight.setData(mSensorRight.contact_time);
-           }
+                mCurrentBGFieldRight.setData(mSensor.braking_gs[RIGHT]);
+                mCurrentIGFieldRight.setData(mSensor.impact_gs[RIGHT]);
+                mCurrentFSFieldRight.setData(mSensor.footstrike_type[RIGHT]);
+                mCurrentPronationFieldRight.setData(mSensor.pronation_excursion_fs_mp[RIGHT]);
+                mCurrentFlightFieldRight.setData(mSensor.flight_ratio[RIGHT]);
+                mCurrentGCTFieldRight.setData(mSensor.contact_time[RIGHT]);
+           }           
         }
+        
     }
 
     function onLayout(dc) {
@@ -335,26 +342,26 @@ class RunScribeDataField extends Ui.DataField {
         return null;
     }
         
-    hidden function getMetric(metricType, sensor) {
+    hidden function getMetric(metricType, LR) {
         var floatFormat = "%.1f";
-        if (sensor != null) {
+        if (mSensor != null) {
             if (metricType == 1) {
-                return sensor.impact_gs.format(floatFormat);
+                return mSensor.impact_gs[LR].format(floatFormat);
             } 
             if (metricType == 2) {
-                return sensor.braking_gs.format(floatFormat);
+                return mSensor.braking_gs[LR].format(floatFormat);
             } 
             if (metricType == 3) {
-                return sensor.footstrike_type.format("%d");
+                return mSensor.footstrike_type[LR].format("%d");
             } 
             if (metricType == 4) {
-                return sensor.pronation_excursion_fs_mp.format(floatFormat);
+                return mSensor.pronation_excursion_fs_mp[LR].format(floatFormat);
             } 
             if (metricType == 5) {
-                return sensor.flight_ratio.format(floatFormat);
+                return mSensor.flight_ratio[LR].format(floatFormat);
             } 
             if (metricType == 6) {
-                return sensor.contact_time.format("%d");
+                return mSensor.contact_time[LR].format("%d");
             }
         }
         return "0";
@@ -380,7 +387,7 @@ class RunScribeDataField extends Ui.DataField {
         }
 
         // Update status
-        if (mSensorLeft != null && mSensorRight != null && (mSensorRight.searching == 0 || mSensorLeft.searching == 0)) {
+        if ((mSensor != null) && (mSensor.searching == 0)) {
             
             var met1x, met1y, met2x = 0, met2y = 0, met3x = 0, met3y = 0, met4x = 0, met4y = 0;
             
@@ -449,8 +456,8 @@ class RunScribeDataField extends Ui.DataField {
                 } 
             }
         } else {
-            var message = "Searching(1.28)...";
-            if (mSensorLeft == null || mSensorRight == null) {
+            var message = "Searching(2.0)...";
+            if (mSensor == null) {
                 message = "No Channel!";
             }
             
@@ -460,11 +467,11 @@ class RunScribeDataField extends Ui.DataField {
 
     hidden function drawMetricOffset(dc, x, y, metricType) {
     
-        var metricLeft = getMetric(metricType, mSensorLeft);
-        var metricRight = getMetric(metricType, mSensorRight);
+        var metricLeft = getMetric(metricType, LEFT);
+        var metricRight = getMetric(metricType, RIGHT);
         
         if (metricType == 7) {
-            metricLeft = ((mSensorLeft.power + mSensorRight.power) / 2).format("%d");
+            metricLeft = power.format("%d");
         }
          
         dc.drawText(x, y + mMetricTitleY, Gfx.FONT_XTINY, getMetricName(metricType), Gfx.TEXT_JUSTIFY_CENTER);

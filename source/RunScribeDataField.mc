@@ -220,6 +220,14 @@ class RunScribeDataField extends Ui.DataField {
                 pronation = (pronation + mSensor.pronation_excursion_fs_mp_right) * multiplier;
                 flight = (flight + mSensor.flight_ratio_right) * multiplier;
                 contact = (contact + mSensor.contact_time_right) * multiplier;
+            } else {
+                // Separate left / right recording
+                mCurrentBGFieldRight.setData(mSensor.braking_gs_right);
+                mCurrentIGFieldRight.setData(mSensor.impact_gs_right);
+                mCurrentFSFieldRight.setData(mSensor.footstrike_type_right);
+                mCurrentPronationFieldRight.setData(mSensor.pronation_excursion_fs_mp_right);
+                mCurrentFlightFieldRight.setData(mSensor.flight_ratio_right);
+                mCurrentGCTFieldRight.setData(mSensor.contact_time_right);
             }     
 
             power = (power + mSensor.power_right) * multiplier;
@@ -231,16 +239,6 @@ class RunScribeDataField extends Ui.DataField {
             mCurrentFlightFieldLeft.setData(flight);
             mCurrentGCTFieldLeft.setData(contact);            
             mCurrentPowerField.setData(power);
-            
-            if (mCurrentBGFieldRight != null) {
-                // Separate left / right recording
-                mCurrentBGFieldRight.setData(mSensor.braking_gs_right);
-                mCurrentIGFieldRight.setData(mSensor.impact_gs_right);
-                mCurrentFSFieldRight.setData(mSensor.footstrike_type_right);
-                mCurrentPronationFieldRight.setData(mSensor.pronation_excursion_fs_mp_right);
-                mCurrentFlightFieldRight.setData(mSensor.flight_ratio_right);
-                mCurrentGCTFieldRight.setData(mSensor.contact_time_right);
-           }           
         }
         
     }

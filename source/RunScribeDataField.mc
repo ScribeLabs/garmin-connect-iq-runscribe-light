@@ -28,13 +28,12 @@ using Toybox.Graphics as Gfx;
 using Toybox.FitContributor as Fit;
 
 class RunScribeDataField extends Ui.DataField {
-    
-    hidden var mMetric1Type; // 1 - Impact GS, 2 - Braking GS, 3 - FS Type, 4 - Pronation, 5 - Flight Ratio, 6 - Contact Time
-    hidden var mMetric2Type; // 1 - Impact GS, 2 - Braking GS, 3 - FS Type, 4 - Pronation, 5 - Flight Ratio, 6 - Contact Time
-    hidden var mMetric3Type; // 0 - None, 1 - Impact GS, 2 - Braking GS, 3 - FS Type, 4 - Pronation, 5 - Flight Ratio, 6 - Contact Time
-    hidden var mMetric4Type; // 0 - None, 1 - Impact GS, 2 - Braking GS, 3 - FS Type, 4 - Pronation, 5 - Flight Ratio, 6 - Contact Time
 
-    hidden var mMetricCount;
+    hidden var mMetricTypes = [-1, -1, -1, -1];  // 0 - Impact GS, 1 - Braking GS, 2 - FS Type, 3 - Pronation, 4 - Flight Ratio, 5 - Contact Time, 6 - Power
+
+    hidden var mMetricCount = 0;
+    hidden var mVisibleMetrics;
+
     hidden var mVisibleMetricCount;
 
     // Common
@@ -58,198 +57,126 @@ class RunScribeDataField extends Ui.DataField {
     hidden var mUpdateLayout = 0;
     
     // FIT Contributions variables
-    hidden var mCurrentBGFieldLeft;
-    hidden var mCurrentIGFieldLeft;
-    hidden var mCurrentFSFieldLeft;
-    hidden var mCurrentPronationFieldLeft;
-    hidden var mCurrentFlightFieldLeft;
-    hidden var mCurrentGCTFieldLeft;
+    hidden var mMetricContributorsLeft = [null, null, null, null];
+    hidden var mMetricContributorsRight = [null, null, null, null];
 
-    hidden var mCurrentBGFieldRight;
-    hidden var mCurrentIGFieldRight;
-    hidden var mCurrentFSFieldRight;
-    hidden var mCurrentPronationFieldRight;
-    hidden var mCurrentFlightFieldRight;
-    hidden var mCurrentGCTFieldRight;    
-
-    hidden var mCurrentPowerField;
-    
-    hidden var mMesgPeriod;
-    
-    
+    hidden var mPowerContributor;
     
     // Constructor
-    function initialize(screenShape, screenHeight, storedChannelCount) {
+    function initialize(sensorL, sensorR, screenShape, screenHeight) {
         DataField.initialize();
         
         mScreenShape = screenShape;
         mScreenHeight = screenHeight;
         
-        onSettingsChanged();        
+        // Reads what metrics chosen and removes duplicate metrics
+        onSettingsChanged();
+        
+        mSensorLeft = sensorL;
+        mSensorRight = sensorR;
 
         var d = {};
         var units = "units";
 
-        var offset = 0;
-        var extensionRight = "_R";
-        var extensionLeft = "_L";
+        var hasPower = 0;
+        
+        for (var i = 0; i < 4; ++i) {
+	        if (mMetricTypes[i] >= 0) {
+	            d[units] = getMetricUnit(mMetricTypes[i]);
+	            if (mMetricTypes[i] < 6) {
+		            mMetricContributorsLeft[i] = createField("", mMetricTypes[i], Fit.DATA_TYPE_FLOAT, d);
+		            mMetricContributorsRight[i] = createField("", mMetricTypes[i] + 6, Fit.DATA_TYPE_FLOAT, d);
+		       } else {
+		           hasPower = 1;
+		       }
+	        }
+        }
 
-        if (storedChannelCount == 2) {
-            mCurrentFSFieldRight = createField("FS" + extensionRight, 8, Fit.DATA_TYPE_SINT8, d);
-        } else {
-            offset = 12;
-            extensionLeft = "";
-        }            
-
-        mCurrentFSFieldLeft = createField("FS" + extensionLeft, 2 + offset, Fit.DATA_TYPE_SINT8, d);
-
-        d[units] = "G";       
-        if (storedChannelCount == 2) {         
-            mCurrentBGFieldRight = createField("BG" + extensionRight, 6, Fit.DATA_TYPE_FLOAT, d);
-            mCurrentIGFieldRight = createField("IG" + extensionRight, 7, Fit.DATA_TYPE_FLOAT, d);
+        if (hasPower > 0) {
+            d[units] = getMetricUnit(6);
+            mPowerContributor = createField("", 12, Fit.DATA_TYPE_FLOAT, d);
         }
-        
-        mCurrentBGFieldLeft = createField("BG" + extensionLeft, 0 + offset, Fit.DATA_TYPE_FLOAT, d);
-        mCurrentIGFieldLeft = createField("IG" + extensionLeft, 1 + offset, Fit.DATA_TYPE_FLOAT, d);
-        
-        d[units] = "D";        
-        if (storedChannelCount == 2) {         
-            mCurrentPronationFieldRight = createField("P" + extensionRight, 9, Fit.DATA_TYPE_SINT16, d);
-        }
-        
-        mCurrentPronationFieldLeft = createField("P" + extensionLeft, 3 + offset, Fit.DATA_TYPE_SINT16, d);
-        
-        d[units] = "%";
-        if (storedChannelCount == 2) {
-            mCurrentFlightFieldRight = createField("FR" + extensionRight, 10, Fit.DATA_TYPE_SINT8, d);
-        }
-        
-        mCurrentFlightFieldLeft = createField("FR" + extensionLeft, 4 + offset, Fit.DATA_TYPE_SINT8, d);
-       
-        d[units] = "ms";
-        if (storedChannelCount == 2) {
-            mCurrentGCTFieldRight = createField("GCT" + extensionRight, 11, Fit.DATA_TYPE_SINT16, d);
-        }
-        
-        mCurrentGCTFieldLeft = createField("GCT" + extensionLeft, 5 + offset, Fit.DATA_TYPE_SINT16, d);
-        
-        d[units] = "W";
-        mCurrentPowerField = createField("Power", 18, Fit.DATA_TYPE_SINT16, d);
     }
     
     function onSettingsChanged() {
         var app = App.getApp();
         
-        var antRate = app.getProperty("antRate");
-        mMesgPeriod = 8192 >> antRate;        
-        
-        mMetric1Type = app.getProperty("tM1");
-        mMetric2Type = app.getProperty("tM2");
-        mMetric3Type = app.getProperty("tM3");
-        mMetric4Type = app.getProperty("tM4");
-
-        // Remove empty metrics from between
-        if (mMetric2Type == 0) {
-            if (mMetric3Type == 0) {
-                mMetric2Type = mMetric4Type;
-            } else {
-                mMetric2Type = mMetric3Type;
-                mMetric3Type = mMetric4Type;
+        if (mMetricCount == 0) {
+            var name = "tM";
+            for (var i = 0; i < 4; ++i) {
+                mMetricTypes[i] = app.getProperty(name + (i + 1));
+                // Remove duplicatate metrics
+                for (var j = 0; j < i; ++j) {
+                    if (mMetricTypes[i] == mMetricTypes[j]) {
+                        mMetricTypes[i] = -1;
+                    }
+                }
             }
-            mMetric4Type = 0;
-        } else if (mMetric3Type == 0) {
-            mMetric3Type = mMetric4Type;
-            mMetric4Type = 0;
+            
+            if (mMetricTypes[1] < 0) {
+                if (mMetricTypes[2] < 0) {
+                    mMetricTypes[1] = mMetricTypes[3];
+                } else {
+                    mMetricTypes[1] = mMetricTypes[2];
+                    mMetricTypes[2] = mMetricTypes[3];
+                }
+                mMetricTypes[3] = -1;
+            } else if (mMetricTypes[2] < 0) {
+                mMetricTypes[2] = mMetricTypes[3];
+                mMetricTypes[3] = -1;
+            }
+    
+            for (var i = 0; i < 4; ++i) {
+                if (mMetricTypes[i] >= 0) {
+                    mMetricCount = i + 1;
+                }        
+            }
         }
-
-        mMetricCount = 1;
         
-        if (mMetric4Type != 0) {
-            mMetricCount = 4; 
-        } else if (mMetric3Type != 0) {
-            mMetricCount = 3;
-        } else if (mMetric2Type != 0) {
-            mMetricCount = 2;
+        mVisibleMetrics = app.getProperty("visibleMetrics");
+        if (mMetricCount < mVisibleMetrics) {
+            mVisibleMetrics = mMetricCount;
         }
         
         mUpdateLayout = 1;
     }
     
+    function updateMetrics(sensor, contributors) {
+        if (!sensor.isChannelOpen) {
+            sensor.openChannel();
+        }
+       
+        sensor.idleTime++;
+        if (sensor.idleTime > 30) {
+            sensor.closeChannel();
+        }
+    
+        for (var i = 0; i < 4; ++i) {
+	        if (contributors[i] != null) {
+	            contributors[i].setData(sensor.data[mMetricTypes[i]]);
+	        }
+        }            
+    }
+    
     function compute(info) {
     
-        if (mSensorLeft == null || !mSensorLeft.isChannelOpen) {
-            if (mSensorLeft != null) {
-                mSensorLeft = null;
-            } else {
-	            try {
-	                mSensorLeft = new RunScribeSensor(11, 62, mMesgPeriod);
-	            } catch(e) {
-	                mSensorLeft = null;
-	            }
-	       }
-        } else {
-
-            ++mSensorLeft.idleTime;
-            if (mSensorLeft.idleTime > 30) {
-                    mSensorLeft.closeChannel();
-            }
-        
-            var braking = mSensorLeft.braking_gs;
-            var impact = mSensorLeft.impact_gs;
-            var footstrike = mSensorLeft.footstrike_type;
-            var pronation = mSensorLeft.pronation_excursion_fs_mp;
-            var flight = mSensorLeft.flight_ratio;
-            var contact = mSensorLeft.contact_time;
- 
-            // If no right field then taking averages !!
-            if (mCurrentBGFieldRight == null && mSensorRight != null) {
-                // Average left / right recording
-                braking = (braking + mSensorRight.braking_gs) * 0.5;
-                impact = (impact + mSensorRight.impact_gs) * 0.5;
-                footstrike = (footstrike + mSensorRight.footstrike_type) * 0.5;
-                pronation = (pronation + mSensorRight.pronation_excursion_fs_mp) * 0.5;
-                flight = (flight + mSensorRight.flight_ratio) * 0.5;
-                contact = (contact + mSensorRight.contact_time) * 0.5;
-            }
-                            
-            mCurrentBGFieldLeft.setData(braking);
-            mCurrentIGFieldLeft.setData(impact);
-            mCurrentFSFieldLeft.setData(footstrike);
-            mCurrentPronationFieldLeft.setData(pronation);
-            mCurrentFlightFieldLeft.setData(flight);
-            mCurrentGCTFieldLeft.setData(contact);
-            
-            if (mSensorRight != null) {
-                mCurrentPowerField.setData((mSensorLeft.power + mSensorRight.power) * 0.5);
-            }
+        var power = 0.0;
+        var sensorCount = 0;
+    
+        if (mSensorLeft != null) {
+            updateMetrics(mSensorLeft, mMetricContributorsLeft);
+            power = mSensorLeft.data[6];
+            ++sensorCount;
         }
-        
-        if (mSensorRight == null || !mSensorRight.isChannelOpen) {
-            if (mSensorRight != null) {
-                mSensorRight = null;
-            } else {
-	            try {
-	                mSensorRight = new RunScribeSensor(12, 64, mMesgPeriod);
-	            } catch(e) {
-	                mSensorRight = null;
-	            }
-            }
-        } else {
 
-            ++mSensorRight.idleTime;
-            if (mSensorRight.idleTime > 29) {
-                mSensorRight.closeChannel();
-            }
-            
-            if (mCurrentBGFieldRight != null) {
-                // Separate left / right recording
-                mCurrentBGFieldRight.setData(mSensorRight.braking_gs);
-                mCurrentIGFieldRight.setData(mSensorRight.impact_gs);
-                mCurrentFSFieldRight.setData(mSensorRight.footstrike_type);
-                mCurrentPronationFieldRight.setData(mSensorRight.pronation_excursion_fs_mp);
-                mCurrentFlightFieldRight.setData(mSensorRight.flight_ratio);
-                mCurrentGCTFieldRight.setData(mSensorRight.contact_time);
-           }
+        if (mSensorRight != null) {
+            updateMetrics(mSensorRight, mMetricContributorsRight);
+            power += mSensorRight.data[6];
+            ++sensorCount;
+        }
+                
+        if (mPowerContributor != null && sensorCount > 0) {
+            mPowerContributor.setData(power / sensorCount);
         }
     }
 
@@ -257,7 +184,7 @@ class RunScribeDataField extends Ui.DataField {
         var width = dc.getWidth();
         var height = dc.getHeight();
         
-        mVisibleMetricCount = mMetricCount;
+        mVisibleMetricCount = mVisibleMetrics;
         
         if (height < mScreenHeight) {
             mVisibleMetricCount = 1;
@@ -276,7 +203,19 @@ class RunScribeDataField extends Ui.DataField {
             width *= 2.0;
         }
 
-        mDataFont = selectFont(dc, width * 0.2225, height - metricNameFontHeight, "00.0-");
+        var fontIdx;
+        var fonts = [Gfx.FONT_XTINY, Gfx.FONT_TINY, Gfx.FONT_SMALL, Gfx.FONT_MEDIUM, Gfx.FONT_LARGE,
+                    Gfx.FONT_NUMBER_MILD, Gfx.FONT_NUMBER_MEDIUM, Gfx.FONT_NUMBER_HOT, Gfx.FONT_NUMBER_THAI_HOT];
+                     
+        //Search through fonts from biggest to smallest
+        for (fontIdx = 8; fontIdx > 0; --fontIdx) {
+            if ((dc.getTextWidthInPixels("00.0-", fonts[fontIdx]) <= width * 0.225)) {
+                // If this font fits, it is the biggest one that does
+                break;
+            }
+        }
+        
+        mDataFont = fonts[fontIdx];       
             
         mDataFontHeight = dc.getFontHeight(mDataFont);    
             
@@ -290,74 +229,64 @@ class RunScribeDataField extends Ui.DataField {
         mUpdateLayout = 0;
     }
     
-    hidden function selectFont(dc, width, height, testString) {
-        var fontIdx;
-        var dimensions;
-        
-        var fonts = [Gfx.FONT_XTINY, Gfx.FONT_TINY, Gfx.FONT_SMALL, Gfx.FONT_MEDIUM, Gfx.FONT_LARGE,
-                    Gfx.FONT_NUMBER_MILD, Gfx.FONT_NUMBER_MEDIUM, Gfx.FONT_NUMBER_HOT, Gfx.FONT_NUMBER_THAI_HOT];
-                     
-        //Search through fonts from biggest to smallest
-        for (fontIdx = 8; fontIdx > 0; --fontIdx) {
-            dimensions = dc.getTextDimensions(testString, fonts[fontIdx]);
-            if ((dimensions[0] <= width) && (dimensions[1] <= height)) {
-                // If this font fits, it is the biggest one that does
-                break;
-            }
-        }
-        
-        return fonts[fontIdx];
-    }
-    
     hidden function getMetricName(metricType) {
-        if (metricType == 1) {
+        if (metricType == 0) {
             return "Impact Gs";
         } 
-        if (metricType == 2) {
+        if (metricType == 1) {
             return "Braking Gs";
         } 
-        if (metricType == 3) {
+        if (metricType == 2) {
             return "Footstrike";
         } 
-        if (metricType == 4) {
+        if (metricType == 3) {
             return "Pronation";
         } 
-        if (metricType == 5) {
+        if (metricType == 4) {
             return "Flight (%)";
         } 
-        if (metricType == 6) {
+        if (metricType == 5) {
             return "GCT (ms)";
         } 
-        if (metricType == 7) {
+        if (metricType == 6) {
             return "Power (W)";
         }
         
         return null;
     }
+    
+    hidden function getMetricUnit(metricType) {
+        if (metricType == 0 || metricType == 1) {
+            return "G";
+        } 
+        if (metricType == 2) {
+            return "";
+        } 
+        if (metricType == 3) {
+            return "°";
+        } 
+        if (metricType == 4) {
+            return "%";
+        } 
+        if (metricType == 5) {
+            return "ms";
+        } 
+        if (metricType == 6) {
+            return "W";
+        }
+        
+        return null;
+    }
+    
         
     hidden function getMetric(metricType, sensor) {
-        var floatFormat = "%.1f";
-        if (sensor != null) {
-            if (metricType == 1) {
-                return sensor.impact_gs.format(floatFormat);
-            } 
-            if (metricType == 2) {
-                return sensor.braking_gs.format(floatFormat);
-            } 
-            if (metricType == 3) {
-                return sensor.footstrike_type.format("%d");
-            } 
-            if (metricType == 4) {
-                return sensor.pronation_excursion_fs_mp.format(floatFormat);
-            } 
-            if (metricType == 5) {
-                return sensor.flight_ratio.format(floatFormat);
-            } 
-            if (metricType == 6) {
-                return sensor.contact_time.format("%d");
-            }
+        var data = sensor.data[metricType];
+        
+        if (metricType == 2 || metricType == 5) {
+            return data.format("%d");
         }
-        return "0";
+        
+        return data.format("%.1f");
     }
     
     
@@ -380,7 +309,7 @@ class RunScribeDataField extends Ui.DataField {
         }
 
         // Update status
-        if (mSensorLeft != null && mSensorRight != null && (mSensorRight.searching == 0 || mSensorLeft.searching == 0)) {
+        if ((mSensorLeft != null && mSensorRight != null) && (mSensorRight.searching == 0 || mSensorLeft.searching == 0)) {
             
             var met1x, met1y, met2x = 0, met2y = 0, met3x = 0, met3y = 0, met4x = 0, met4y = 0;
             
@@ -409,13 +338,12 @@ class RunScribeDataField extends Ui.DataField {
                 met1y = yCenter - yOffset;
                 met2x = xCenter + xOffset;
                 met2y = met1y;
+                met3y = yCenter + yOffset;  
             
                 if (mVisibleMetricCount == 3) {
                     met3x = xCenter;
-                    met3y = yCenter + yOffset;  
                 } else {
                     met3x = met1x;
-                    met3y = yCenter + yOffset;  
                     met4x = met2x;
                     met4y = met3y;  
                 }
@@ -438,18 +366,18 @@ class RunScribeDataField extends Ui.DataField {
                 }
             }
             
-            drawMetricOffset(dc, met1x, met1y, mMetric1Type);         
+            drawMetricOffset(dc, met1x, met1y, mMetricTypes[0]);         
             if (mVisibleMetricCount >= 2) {
-                drawMetricOffset(dc, met2x, met2y, mMetric2Type);
+                drawMetricOffset(dc, met2x, met2y, mMetricTypes[1]);
                 if (mVisibleMetricCount >= 3) {
-                    drawMetricOffset(dc, met3x, met3y, mMetric3Type);
+                    drawMetricOffset(dc, met3x, met3y, mMetricTypes[2]);
                     if (mVisibleMetricCount == 4) {
-                        drawMetricOffset(dc, met4x, met4y, mMetric4Type);
+                        drawMetricOffset(dc, met4x, met4y, mMetricTypes[3]);
                     } 
                 } 
             }
         } else {
-            var message = "Searching(1.28)...";
+            var message = "Searching(1.33)...";
             if (mSensorLeft == null || mSensorRight == null) {
                 message = "No Channel!";
             }
@@ -463,15 +391,11 @@ class RunScribeDataField extends Ui.DataField {
         var metricLeft = getMetric(metricType, mSensorLeft);
         var metricRight = getMetric(metricType, mSensorRight);
         
-        if (metricType == 7) {
-            metricLeft = ((mSensorLeft.power + mSensorRight.power) / 2).format("%d");
-        }
-         
         dc.drawText(x, y + mMetricTitleY, Gfx.FONT_XTINY, getMetricName(metricType), Gfx.TEXT_JUSTIFY_CENTER);
 
-        if (metricType == 7) {
+        if (metricType == 6) {
             // Power metric presents a single value
-            dc.drawText(x, y + mMetricValueY, mDataFont, metricLeft, Gfx.TEXT_JUSTIFY_CENTER);
+            dc.drawText(x, y + mMetricValueY, mDataFont, ((mSensorLeft.data[6] + mSensorRight.data[6]) / 2).format("%d"), Gfx.TEXT_JUSTIFY_CENTER);
         } else {
             dc.drawText(x - mMetricValueOffsetX, y + mMetricValueY, mDataFont, metricLeft, Gfx.TEXT_JUSTIFY_RIGHT);
             dc.drawText(x + mMetricValueOffsetX, y + mMetricValueY, mDataFont, metricRight, Gfx.TEXT_JUSTIFY_LEFT);

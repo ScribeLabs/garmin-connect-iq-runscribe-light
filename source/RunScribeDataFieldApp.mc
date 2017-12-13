@@ -38,22 +38,27 @@ class RunScribeDataFieldApp extends App.AppBase {
     }
     
     function getInitialView() {
-        var lrRecording = getProperty("lrmetrics");
-        var recordedChannelCount = 1;
-        if (lrRecording) {
-            recordedChannelCount = 2;
-        }
-
-        mDataField = new RunScribeDataField(mScreenShape, mScreenHeight, recordedChannelCount);
+        var antRate = getProperty("antRate");
         
+        var sensorLeft;
+        var sensorRight;
+        
+        try {       
+            sensorLeft = new RunScribeSensor(11, 62, 8192 >> antRate);
+            sensorRight = new RunScribeSensor(12, 64, 8192 >> antRate);
+        } catch(e) {
+            sensorLeft = null;
+            sensorRight = null;
+        }
+        
+        
+        mDataField = new RunScribeDataField(sensorLeft, sensorRight, mScreenShape, mScreenHeight);
         return [mDataField];
     }
     
     function onStop(state) {
-        if (mDataField.mSensorLeft != null) {
+        if (mDataField != null) {
             mDataField.mSensorLeft.closeChannel();
-         }
-        if (mDataField.mSensorRight != null) {
             mDataField.mSensorRight.closeChannel();
         }
         return false;

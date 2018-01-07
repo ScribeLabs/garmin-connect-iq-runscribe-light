@@ -5,5 +5,4 @@
     <property id="tM3" type="number">1</property>
     <property id="tM4" type="number">2</property>
     <property id="visibleMetrics" type="number">4</property>
-    <property id="antRate" type="number">0</property>
 </properties>

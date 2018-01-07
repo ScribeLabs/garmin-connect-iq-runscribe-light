@@ -54,14 +54,5 @@
     <setting propertyKey="@Properties.visibleMetrics" title="@Strings.visibleMetrics">
         <settingConfig type="numeric" min="1" max="4"/>
     </setting>
-
-    
-    <setting propertyKey="@Properties.antRate" title="@Strings.antRate">
-        <settingConfig type="list">
-            <listEntry value="0">@Strings.Hz4</listEntry>
-            <listEntry value="1">@Strings.Hz8</listEntry>
-            <listEntry value="2">@Strings.Hz16</listEntry>
-        </settingConfig>
-    </setting>    
     
 </settings>

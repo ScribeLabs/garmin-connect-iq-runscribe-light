@@ -231,10 +231,10 @@ class RunScribeDataField extends Ui.DataField {
     
     hidden function getMetricName(metricType) {
         if (metricType == 0) {
-            return "Impact Gs";
+            return "Braking Gs";
         } 
         if (metricType == 1) {
-            return "Braking Gs";
+            return "Impact Gs";
         } 
         if (metricType == 2) {
             return "Footstrike";
@@ -377,7 +377,7 @@ class RunScribeDataField extends Ui.DataField {
                 } 
             }
         } else {
-            var message = "Searching(1.33)...";
+            var message = "Searching(1.37)...";
             if (mSensorLeft == null || mSensorRight == null) {
                 message = "No Channel!";
             }

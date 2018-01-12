@@ -7,19 +7,19 @@
             displayInChart="true"
             sortOrder="0"
             precision="1"
-            chartTitle="@Strings.braking_gs_label_left"
-            dataLabel="@Strings.braking_gs_label_left"
+            chartTitle="@Strings.impact_gs_label_left"
+            dataLabel="@Strings.impact_gs_label_left"
             unitLabel="@Strings.impact_braking_gs_units"
-            fillColor="#FF0000" />
+            fillColor="#00FF00" />
         
         <fitField id="1"
             displayInChart="true"
             sortOrder = "2"
             precision="1"
-            chartTitle="@Strings.impact_gs_label_left"
-            dataLabel="@Strings.impact_gs_label_left"
+            chartTitle="@Strings.braking_gs_label_left"
+            dataLabel="@Strings.braking_gs_label_left"
             unitLabel="@Strings.impact_braking_gs_units"
-            fillColor="#00FF00" />
+            fillColor="#FF0000" />
         
         <fitField id="2"
             displayInChart="true"
@@ -58,24 +58,24 @@
             fillColor="#FFFF00" />
 
         <!-- RIGHT -->
-           
+        
         <fitField id="6"
             displayInChart="true"
             sortOrder="1"
-            precision="1"
-            chartTitle="@Strings.braking_gs_label_right"
-            dataLabel="@Strings.braking_gs_label_right"
-            unitLabel="@Strings.impact_braking_gs_units"
-            fillColor="#FF0000" />
-        
-        <fitField id="7"
-            displayInChart="true"
-            sortOrder = "3"
             precision="1"
             chartTitle="@Strings.impact_gs_label_right"
             dataLabel="@Strings.impact_gs_label_right"
             unitLabel="@Strings.impact_braking_gs_units"
             fillColor="#00FF00" />
+            
+        <fitField id="7"
+            displayInChart="true"
+            sortOrder = "3"
+            precision="1"
+            chartTitle="@Strings.braking_gs_label_right"
+            dataLabel="@Strings.braking_gs_label_right"
+            unitLabel="@Strings.impact_braking_gs_units"
+            fillColor="#FF0000" />
         
         <fitField id="8"
             displayInChart="true"

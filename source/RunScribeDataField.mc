@@ -231,10 +231,10 @@ class RunScribeDataField extends Ui.DataField {
     
     hidden function getMetricName(metricType) {
         if (metricType == 0) {
-            return "Braking Gs";
+            return "Impact Gs";
         } 
         if (metricType == 1) {
-            return "Impact Gs";
+            return "Braking Gs";
         } 
         if (metricType == 2) {
             return "Footstrike";

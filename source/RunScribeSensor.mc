@@ -86,8 +86,8 @@ class RunScribeSensor extends Ant.GenericChannel {
                 var page = (payload[0] & 0xFF);
                 if (page > 0x0F) {
                     var extra = payload[7];
-                    data[0] = payload[2] / 16.0; // Braking
-                    data[1] = payload[1] / 16.0; // Impact
+                    data[0] = payload[1] / 16.0; // Impact
+                    data[1] = payload[2] / 16.0; // Braking
                     data[2] = payload[0] & 0x0F + 1; // Footstrike
                     data[3] = ((((extra & 0xC0) << 2) + payload[6]) - 512.0) / 10.0; // Pronation
                     data[4] = ((((extra & 0x0C) << 6) + payload[4]) - 224.0) / 8.0; // Flight ratio

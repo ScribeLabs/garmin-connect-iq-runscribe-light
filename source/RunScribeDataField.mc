@@ -377,7 +377,7 @@ class RunScribeDataField extends Ui.DataField {
                 } 
             }
         } else {
-            var message = "Searching(2.4)...";
+            var message = "Searching(2.5)...";
             if (mSensorLeft == null || mSensorRight == null) {
                 message = "No Channel!";
             }
